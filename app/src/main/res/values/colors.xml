@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#009688</color>
+    <color name="colorPrimaryDark">#009688</color>
+    <color name="colorAccent">#f5f5f5</color>
+    <color name="snackbar">#bde36e</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#ffffff</color>
+    <color name="black_overlay">#66000000</color>
+    <color name="tab_color_when_not_selected">#dadada</color>
+</resources>
