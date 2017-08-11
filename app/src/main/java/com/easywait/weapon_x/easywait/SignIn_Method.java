@@ -54,6 +54,10 @@ class SignIn_Method {
                     @Override
                     public void onErrorResponse(VolleyError error) {
 
+                        if ( error.networkResponse.statusCode == 401 )
+
+                            Toast.makeText( context , "Invalid Credentials" , Toast.LENGTH_LONG).show();
+
                         access_token = null;
 
                     }
@@ -87,7 +91,9 @@ class SignIn_Method {
         editor.putString( "password" , password );
         editor.apply();
 
-        Toast.makeText( context , "Welcome Back!" , Toast.LENGTH_SHORT ).show();
+        if ( context instanceof SignIn_Activity )
+
+            Toast.makeText( context , "Welcome Back!" , Toast.LENGTH_SHORT ).show();
 
     }
 

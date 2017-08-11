@@ -1,0 +1,79 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.easywait.weapon_x.easywait.Queue_Preferences_Fragment">
+
+    <ImageView
+        android:id="@+id/settings_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="19dp"
+        android:contentDescription="@string/settings_icon"
+        app:srcCompat="@mipmap/settings" />
+
+    <Button
+        android:id="@+id/set"
+        android:background="@drawable/roundedbutton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="25dp"
+        android:text="@string/set" />
+
+    <TextView
+        android:id="@+id/initial_slots"
+        android:paddingEnd="20dp"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:textAlignment="textEnd"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="101dp"
+        android:text="@string/initial_free_slots"
+        android:layout_below="@+id/settings_icon"
+        android:layout_toStartOf="@+id/initial_slot_number" />
+
+    <TextView
+        android:id="@+id/recurring_slot"
+        android:paddingEnd="20dp"
+        android:textSize="20sp"
+        android:textColor="@color/black"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:text="@string/recurring_free_slot"
+        android:layout_below="@+id/initial_slots"
+        android:layout_alignEnd="@+id/initial_slots" />
+
+    <EditText
+        android:labelFor="@id/initial_slot_number"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:id="@+id/initial_slot_number"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="number"
+        android:layout_alignBaseline="@+id/initial_slots"
+        android:layout_alignBottom="@+id/initial_slots"
+        android:layout_toEndOf="@+id/set" />
+
+    <EditText
+        android:labelFor="@id/recurring_slot"
+        android:textColor="@color/black"
+        android:textAlignment="center"
+        android:id="@+id/recurring_slot_number"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="number"
+        android:layout_alignBaseline="@+id/recurring_slot"
+        android:layout_alignBottom="@+id/recurring_slot"
+        android:layout_toEndOf="@+id/recurring_slot" />
+
+</RelativeLayout>

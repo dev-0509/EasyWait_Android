@@ -2,10 +2,10 @@ package com.easywait.weapon_x.easywait;
 
 import android.graphics.Color;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 
@@ -22,10 +22,12 @@ public class Cust_Vend_Controller extends AppCompatActivity {
         ViewPager mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
+        mViewPager.setOffscreenPageLimit( 3 );
+
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
-        tabLayout.setTabTextColors( R.color.tab_color_when_not_selected , Color.BLACK );
+        tabLayout.setTabTextColors( Color.LTGRAY , Color.BLACK );
 
         tabLayout.getTabAt( 0 ).setIcon( R.drawable.cust );
         tabLayout.getTabAt( 1 ).setIcon( R.drawable.vend );
@@ -33,9 +35,9 @@ public class Cust_Vend_Controller extends AppCompatActivity {
 
     }
 
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
+    private class SectionsPagerAdapter extends FragmentStatePagerAdapter {
 
-        public SectionsPagerAdapter(FragmentManager fm) {
+        SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
@@ -45,14 +47,13 @@ public class Cust_Vend_Controller extends AppCompatActivity {
             switch (position) {
 
                 case 0:
-                    Customer cust = new Customer();
-                    return cust;
+                    return new Customer();
+
                 case 1:
-                    Vendor vend = new Vendor();
-                    return vend;
+                    return new Root_Fragment_Vendor();
+
                 case 2:
-                    Profile prof = new Profile();
-                    return prof;
+                    return new Profile();
 
             }
 

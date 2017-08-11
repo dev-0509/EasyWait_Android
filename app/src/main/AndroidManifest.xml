@@ -14,6 +14,7 @@
             android:name=".Cust_Vend_Controller"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -29,23 +30,9 @@
 
         </activity>
         <activity
-            android:name=".Appointments"
-            android:label="@string/current_appointments"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden|adjustResize">
-
-        </activity>
-        <activity
             android:name=".SignIn_Activity"
             android:label="@string/signin"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden|adjustResize">
-
-        </activity>
-        <activity
-            android:name=".Book_Appointment"
-            android:screenOrientation="portrait"
-            android:label="@string/book_appointment"
             android:windowSoftInputMode="stateHidden|adjustResize">
 
         </activity>

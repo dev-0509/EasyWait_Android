@@ -2,6 +2,7 @@ package com.easywait.weapon_x.easywait;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -11,11 +12,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import static com.easywait.weapon_x.easywait.Globals.isSignedIn;
+
 public class SignIn_Activity extends AppCompatActivity {
 
     private EditText email;
 
     private EditText password;
+
+    String user_email, user_password;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +32,15 @@ public class SignIn_Activity extends AppCompatActivity {
         password = ( EditText ) findViewById( R.id.password );
 
         Button sign_in_button = (Button) findViewById(R.id.sign_in_button);
+
+        fetchCredentials();
+
+        if ( user_email != null && user_password != null ) {
+
+            email.setText( user_email );
+            password.setText( user_password );
+
+        }
 
         sign_in_button.setOnClickListener(new View.OnClickListener() {
 
@@ -49,6 +63,8 @@ public class SignIn_Activity extends AppCompatActivity {
 
                 }
 
+                isSignedIn = true;
+
                 new SignIn_Method().signIn( email.getText().toString().trim() ,
                                             password.getText().toString().trim() ,
                                             getApplicationContext() );
@@ -61,6 +77,16 @@ public class SignIn_Activity extends AppCompatActivity {
             }
 
         });
+
+    }
+
+    private void fetchCredentials() {
+
+        user_email = SignIn_Activity.this.getSharedPreferences("MyPrefs" , Context.MODE_PRIVATE)
+                .getString( "email" , null );
+
+        user_password = SignIn_Activity.this.getSharedPreferences("MyPrefs" , Context.MODE_PRIVATE)
+                .getString( "password" , null );
 
     }
 

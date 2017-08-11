@@ -22,4 +22,25 @@
     <string name="book">Book</string>
     <string name="book_image">book_image</string>
     <string name="book_appointment">Book Appointment</string>
+    <string name="name_your_queue">Name your Queue</string>
+    <string name="add">Add</string>
+    <string name="add_q_image">add_q_image</string>
+    <string name="queue_administration">Queue Administration</string>
+    <string name="active_queues">Active Queues</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="accepting_appointments">Accepting Appointments</string>
+    <string name="current_position">Current Position</string>
+    <string name="move_next">Next</string>
+    <string name="reset">Reset</string>
+    <string name="appointments">Appointments</string>
+    <string name="open">Open</string>
+    <string name="close">Close</string>
+    <string name="cancel_appointments">cancel_appointments</string>
+    <string name="active_appointments">Active Appointments</string>
+    <string name="settings_icon">settings_icon</string>
+    <string name="set">Set</string>
+    <string name="initial_free_slots">Initial Free Slots</string>
+    <string name="recurring_free_slot">Recurring Free Slot</string>
 </resources>

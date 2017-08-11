@@ -7,5 +7,4 @@
     <color name="black">#FF000000</color>
     <color name="white">#ffffff</color>
     <color name="black_overlay">#66000000</color>
-    <color name="tab_color_when_not_selected">#dadada</color>
 </resources>

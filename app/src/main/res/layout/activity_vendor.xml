@@ -1,9 +1,68 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/vendor_tab"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin">
+
+    <EditText
+        android:id="@+id/name"
+        android:layout_width="220dp"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:inputType="textPersonName"
+        android:textAlignment="center"
+        android:hint="@string/name_your_queue" />
+
+    <Button
+        android:id="@+id/add_q_button"
+        android:background="@drawable/roundedbutton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/name"
+        android:layout_centerHorizontal="true"
+        android:text="@string/add" />
+
+    <ImageView
+        android:contentDescription="@string/add_q_image"
+        android:id="@+id/vendor"
+        android:layout_width="100dp"
+        android:layout_height="70dp"
+        app:srcCompat="@mipmap/add_q_image"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <ListView
+        android:layout_width="200dp"
+        android:layout_height="150dp"
+        android:transcriptMode="alwaysScroll"
+        android:id="@+id/q_list"
+        android:layout_alignTop="@+id/name"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="24dp" />
+
+    <ImageView
+        android:id="@+id/queue"
+        android:contentDescription="@string/queue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@mipmap/queue2"
+        android:layout_below="@+id/active_queues"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:id="@+id/active_queues"
+        android:layout_width="130dp"
+        android:layout_height="30dp"
+        android:textColor="@color/black"
+        android:textAlignment="center"
+        android:textSize="18sp"
+        android:text="@string/active_queues"
+        android:layout_alignTop="@+id/q_list"
+        android:layout_toStartOf="@+id/add_q_button" />
 
 </RelativeLayout>

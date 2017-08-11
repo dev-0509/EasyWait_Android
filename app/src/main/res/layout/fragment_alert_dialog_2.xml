@@ -1,0 +1,20 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:alpha="0.7">
+
+    <EditText
+        android:id="@+id/booking_reference"
+        android:layout_width="280dp"
+        android:layout_height="wrap_content"
+        android:hint="@string/name_your_appointment"
+        android:inputType="textPersonName"
+        android:paddingTop="80dp"
+        android:paddingBottom="18dp"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+</RelativeLayout>
