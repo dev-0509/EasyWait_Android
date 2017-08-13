@@ -1,6 +1,7 @@
 package com.easywait.weapon_x.easywait;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -8,6 +9,8 @@ import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Switch;
@@ -36,6 +40,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import static android.content.ContentValues.TAG;
 import static com.easywait.weapon_x.easywait.Globals.server;
@@ -44,29 +49,26 @@ public class Queue_Status_Fragment extends Fragment {
 
     private static final String KEY_ACTION = "action";
 
-    String queue_id;
+    private String queue_id;
 
-    TextView position;
-    TextView q_id_name;
+    private TextView position;
+    private TextView q_id_name;
 
-    ImageView cancel_appointments;
+    private FloatingActionButton cancel_appointments;
+    private FloatingActionButton refresh;
 
-    ListView appointment_list;
+    private ListView appointment_list;
 
-    Switch aSwitch;
+    private Switch aSwitch;
 
-    Button next;
-    Button reset;
+    private Button next;
+    private Button reset;
 
-    FloatingActionButton set_preferences;
+    private FloatingActionButton set_preferences;
 
     private String token;
 
-    Snackbar snackbar = null;
-
-    PullRefreshLayout pull_to_refresh;
-
-    RequestQueue requestQueue;
+    private Snackbar snackbar = null;
 
     @Nullable
     @Override
@@ -80,7 +82,7 @@ public class Queue_Status_Fragment extends Fragment {
         next = (Button) rootView.findViewById( R.id.move_next );
         reset = (Button) rootView.findViewById( R.id.reset );
 
-        cancel_appointments = (ImageView) rootView.findViewById( R.id.cancel_all_appointments );
+        cancel_appointments = (FloatingActionButton) rootView.findViewById( R.id.cancel_all_appointments );
         cancel_appointments.setVisibility( View.INVISIBLE );
 
         appointment_list = (ListView) rootView.findViewById( R.id.appointment_list );
@@ -89,7 +91,7 @@ public class Queue_Status_Fragment extends Fragment {
 
         aSwitch = (Switch) rootView.findViewById( R.id.Switch );
 
-        pull_to_refresh = (PullRefreshLayout) rootView.findViewById( R.id.swipe_to_refresh );
+        refresh = (FloatingActionButton) rootView.findViewById( R.id.refresh );
 
         return rootView;
 
@@ -99,14 +101,6 @@ public class Queue_Status_Fragment extends Fragment {
     public void onResume() {
 
         super.onResume();
-//    }
-//
-//    @Override
-//    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-//
-//        super.onViewCreated(view, savedInstanceState);
-
-        Log.d( TAG , "on view created for queue status fragment called" );
 
         queue_id = getArguments().getString( "queue_id" ).substring( 0 , 2 );
 
@@ -207,17 +201,71 @@ public class Queue_Status_Fragment extends Fragment {
         cancel_appointments.setOnClickListener(new View.OnClickListener() {
 
             @Override
-            public void onClick(View v) {
+            public void onClick(final View v) {
 
-                appointment_list.setVisibility( View.INVISIBLE );
-                cancel_appointments.setVisibility( View.INVISIBLE );
+                final android.support.v7.app.AlertDialog.Builder builder = new AlertDialog.Builder( getContext() );
 
-                snackbar = Snackbar.make(getView(), "All Appointments Inactive", Snackbar.LENGTH_INDEFINITE)
-                        .setAction("Action", null);
+                final View view = LayoutInflater.from( getContext() ).inflate( R.layout.fragment_alert_dialog_1, null );
 
-                snackbar.show();
+                final EditText input_number = (EditText) view.findViewById( R.id.rand_number);
+                final TextView rand_number = (TextView) view.findViewById( R.id.number );
 
-                performAppointmentAction( "reset" );
+                rand_number.setText( Integer.toString( new Random().nextInt( 10 ) ) );
+
+                builder.setIcon( R.drawable.ic_error_black_24dp )
+
+                        .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                                if ( TextUtils.isEmpty( input_number.getText().toString().trim() ) )
+
+                                    Toast.makeText( getContext() , "Number cannot be blank!", Toast.LENGTH_SHORT).show();
+
+                                else {
+
+                                    if ( input_number.getText().toString().equals( rand_number.getText().toString() ) ) {
+
+                                        appointment_list.setVisibility(View.INVISIBLE);
+                                        cancel_appointments.setVisibility(View.INVISIBLE);
+
+                                        snackbar = Snackbar.make(getView(), "All Appointments Inactive", Snackbar.LENGTH_INDEFINITE)
+                                                .setAction("Action", null);
+
+                                        snackbar.show();
+
+                                        performAppointmentAction("reset");
+
+                                    } else
+
+                                        Toast.makeText( getContext() , "Verification Unsuccessful", Toast.LENGTH_SHORT).show();
+
+                                }
+
+                            }
+
+                        })
+
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+
+                        })
+
+                        .setTitle( "Please verify your action!" );
+
+                builder.setView( view );
+
+                AlertDialog dialog = builder.create();
+
+                dialog.show();
+
+                dialog.getButton( DialogInterface.BUTTON_POSITIVE).setTextColor( getResources().getColor( R.color.black ) );
+                dialog.getButton( DialogInterface.BUTTON_NEGATIVE).setTextColor( getResources().getColor( R.color.black ) );
 
             }
 
@@ -250,23 +298,14 @@ public class Queue_Status_Fragment extends Fragment {
 
         });
 
-        pull_to_refresh.setOnRefreshListener(new PullRefreshLayout.OnRefreshListener() {
+        refresh.setOnClickListener(new View.OnClickListener() {
 
             @Override
-            public void onRefresh() {
+            public void onClick(View view) {
 
-                pull_to_refresh.postDelayed(new Runnable() {
+                fetchAppointments();
 
-                    @Override
-                    public void run() {
-
-                        fetchAppointments();
-
-                        pull_to_refresh.setRefreshing( false );
-
-                    }
-
-                }, 3000);
+                Toast.makeText( getContext() , "Appointments Refreshed!" , Toast.LENGTH_SHORT ).show();
 
             }
 
@@ -360,8 +399,8 @@ public class Queue_Status_Fragment extends Fragment {
 
         };
 
-        requestQueue = Volley.newRequestQueue( getActivity() );
-        requestQueue.add( stringRequest );
+        RequestQueue requestQueue = Volley.newRequestQueue(getContext());
+        requestQueue.add(stringRequest);
 
     }
 
@@ -411,8 +450,8 @@ public class Queue_Status_Fragment extends Fragment {
 
                 });
 
-        requestQueue = Volley.newRequestQueue( getContext() );
-        requestQueue.add( stringRequest );
+        RequestQueue requestQueue = Volley.newRequestQueue(getContext());
+        requestQueue.add(stringRequest);
 
     }
 
@@ -458,8 +497,8 @@ public class Queue_Status_Fragment extends Fragment {
             }
         };
 
-        requestQueue = Volley.newRequestQueue( getContext() );
-        requestQueue.add( stringRequest );
+        RequestQueue requestQueue = Volley.newRequestQueue(getContext());
+        requestQueue.add(stringRequest);
 
     }
 
@@ -505,8 +544,8 @@ public class Queue_Status_Fragment extends Fragment {
             }
         };
 
-        requestQueue = Volley.newRequestQueue( getContext() );
-        requestQueue.add( stringRequest );
+        RequestQueue requestQueue = Volley.newRequestQueue(getContext());
+        requestQueue.add(stringRequest);
 
     }
 
@@ -518,8 +557,6 @@ public class Queue_Status_Fragment extends Fragment {
         if ( snackbar != null )
 
             snackbar.dismiss();
-
-        requestQueue.cancelAll( TAG );
 
     }
 

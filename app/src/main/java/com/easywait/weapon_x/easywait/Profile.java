@@ -52,7 +52,7 @@ public class Profile extends Fragment{
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent( getActivity() , SignUp.class );
+                Intent intent = new Intent( getActivity() , SignUp_Activity.class );
 
                 startActivity( intent );
 

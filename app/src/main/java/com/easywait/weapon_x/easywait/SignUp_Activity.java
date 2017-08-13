@@ -2,11 +2,14 @@ package com.easywait.weapon_x.easywait;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -21,20 +24,19 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONObject;
-import org.json.simple.parser.JSONParser;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.easywait.weapon_x.easywait.Globals.server;
 
-public class SignUp extends AppCompatActivity {
+public class SignUp_Activity extends AppCompatActivity {
 
     public static final String MyPreferences = "MyPrefs";
 
-    public static final String KEY_USERNAME = "name";
-    public static final String KEY_PASSWORD = "password";
-    public static final String KEY_EMAIL = "email";
+    private static final String KEY_USERNAME = "name";
+    private static final String KEY_EMAIL = "email";
+    private static final String KEY_PASSWORD= "password";
 
     private EditText name;
     private EditText email;
@@ -43,10 +45,14 @@ public class SignUp extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-        super.onCreate( savedInstanceState );
-        setContentView( R.layout.activity_sign_up );
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_sign_up);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        name = ( EditText ) findViewById( R.id.name );
+        toolbar.setNavigationIcon( R.drawable.ic_group_add_black_24dp );
+
+        name = (EditText) findViewById( R.id.name );
         email = ( EditText ) findViewById( R.id.email );
         password = ( EditText ) findViewById( R.id.password );
 
@@ -57,9 +63,12 @@ public class SignUp extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+
                 registerNewUser( name.getText().toString().trim() ,
-                                 email.getText().toString().trim() ,
-                                 password.getText().toString().trim() );
+                        email.getText().toString().trim() ,
+                        password.getText().toString().trim() );
 
             }
 
@@ -111,9 +120,9 @@ public class SignUp extends AppCompatActivity {
 
                             JSONObject json = new JSONObject( response );
 
-                            SignUp.this.saveUserCredentials( json );
+                            SignUp_Activity.this.saveUserCredentials( json );
 
-                            Toast.makeText( SignUp.this, "Welcome to EasyWait!", Toast.LENGTH_LONG).show();
+                            Toast.makeText( SignUp_Activity.this, "Welcome to EasyWait!", Toast.LENGTH_LONG).show();
 
                             finish();
 
@@ -131,7 +140,7 @@ public class SignUp extends AppCompatActivity {
                     @Override
                     public void onErrorResponse(VolleyError error) {
 
-                        Toast toast = Toast.makeText( SignUp.this, "Registration failed! Please try later..." , Toast.LENGTH_LONG);
+                        Toast toast = Toast.makeText( SignUp_Activity.this, "Registration failed! Please try later..." , Toast.LENGTH_LONG);
                         toast.setGravity( Gravity.CENTER , 0 , 0 );
                         toast.show();
 
@@ -142,7 +151,7 @@ public class SignUp extends AppCompatActivity {
             @Override
             protected Map<String, String> getParams() {
 
-                Map<String, String> params = new HashMap<String, String>();
+                Map<String, String> params = new HashMap<>();
                 params.put( KEY_USERNAME, name );
                 params.put( KEY_EMAIL, email );
                 params.put( KEY_PASSWORD, password );
@@ -160,7 +169,6 @@ public class SignUp extends AppCompatActivity {
     private void saveUserCredentials( JSONObject json ) {
 
         SharedPreferences sharedpreferences = getSharedPreferences( MyPreferences , Context.MODE_APPEND );
-
         SharedPreferences.Editor editor = sharedpreferences.edit();
 
         try {

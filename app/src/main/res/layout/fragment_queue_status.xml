@@ -1,136 +1,147 @@
-<com.baoyz.widget.PullRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/swipe_to_refresh"
+    android:id="@+id/vendor_tab"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingStart="@dimen/activity_horizontal_margin"
+    android:paddingEnd="0dp"
+    android:paddingTop="10dp"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    app:refreshType="smartisan"
-    tools:context="com.easywait.weapon_x.easywait.Queue_Status_Fragment">
+    android:layout_height="match_parent">
 
-    <RelativeLayout
-        android:id="@+id/customer_tab"
+    <ImageView
+        android:id="@+id/queue_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/q_id"
+        android:contentDescription="@string/queue"
+        android:paddingEnd="30dp"
+        android:paddingStart="1dp"
+        app:srcCompat="@mipmap/queue2" />
+
+    <Button
+        android:id="@+id/move_next"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/queue_image"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/borders"
+        android:clickable="true"
+        android:text="@string/move_next" />
+
+    <Button
+        android:id="@+id/reset"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/borders"
+        android:clickable="true"
+        android:text="@string/reset"
+        android:layout_below="@+id/position"
+        android:layout_alignEnd="@+id/appointments" />
+
+    <TextView
+        android:id="@+id/appointments"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:gravity="center_vertical"
+        android:text="@string/appointments"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textSize="20sp" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/appointments"
+        android:orientation="horizontal"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
+        android:weightSum="1">
+
+        <Switch
+            android:id="@+id/Switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingEnd="1dp"
+            android:paddingStart="120dp"
+            android:switchTextAppearance="@style/SwitchTextAppearance" />
+
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/appointment_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="@dimen/activity_vertical_margin"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_vertical_margin">
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/linearLayout"
+        android:layout_toStartOf="@+id/cancel_all_appointments" />
 
-        <ImageView
-            android:id="@+id/queue_image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_below="@+id/q_id"
-            android:contentDescription="@string/queue"
-            android:paddingEnd="30dp"
-            android:paddingStart="1dp"
-            app:srcCompat="@mipmap/queue2" />
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/cancel_all_appointments"
+        app:fabSize="mini"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:contentDescription="@string/cancel_appointments"
+        app:srcCompat="@drawable/ic_delete_forever_black_48dp"
+        android:layout_marginBottom="18dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignEnd="@+id/appointments" />
 
-        <Button
-            android:id="@+id/move_next"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/queue_image"
-            android:layout_centerHorizontal="true"
-            android:background="@drawable/borders"
-            android:clickable="true"
-            android:text="@string/move_next" />
+    <TextView
+        android:id="@+id/position"
+        android:layout_width="170dp"
+        android:layout_height="100dp"
+        android:layout_below="@+id/q_id"
+        android:layout_toEndOf="@+id/queue_image"
+        android:gravity="center_vertical"
+        android:paddingEnd="1dp"
+        android:paddingStart="20dp"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textSize="50sp" />
 
-        <Button
-            android:id="@+id/reset"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_below="@+id/position"
-            android:background="@drawable/borders"
-            android:clickable="true"
-            android:text="@string/reset" />
+    <TextView
+        android:id="@+id/q_id"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/black"
+        android:textSize="17sp" />
 
-        <TextView
-            android:id="@+id/appointments"
-            android:layout_width="match_parent"
-            android:layout_height="30dp"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:gravity="center_vertical"
-            android:text="@string/appointments"
-            android:textAlignment="center"
-            android:textColor="@color/black"
-            android:textSize="20sp" />
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/preferences"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/queue_image"
+        android:layout_marginStart="38dp"
+        android:clickable="true"
+        app:fabSize="mini"
+        app:srcCompat="@mipmap/preferences" />
 
-        <LinearLayout
-            android:id="@+id/linearLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_below="@+id/appointments"
-            android:orientation="horizontal"
-            android:paddingBottom="10dp"
-            android:paddingTop="10dp"
-            android:weightSum="1">
 
-            <Switch
-                android:id="@+id/Switch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingEnd="1dp"
-                android:paddingStart="120dp"
-                android:switchTextAppearance="@style/SwitchTextAppearance" />
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/refresh"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:clickable="true"
+        app:fabSize="mini"
+        app:srcCompat="@mipmap/ic_refresh_black_48dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true" />
 
-        </LinearLayout>
+    <Button
+        android:id="@+id/refresh2"
+        android:background="@drawable/white_button"
+        android:layout_width="20dp"
+        android:layout_height="40dp"
+        android:layout_alignTop="@+id/refresh"
+        android:layout_alignParentEnd="true" />
 
-        <ListView
-            android:id="@+id/appointment_list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignParentStart="true"
-            android:layout_below="@+id/linearLayout"
-            android:layout_toStartOf="@+id/cancel_all_appointments" />
-
-        <ImageView
-            android:id="@+id/cancel_all_appointments"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_below="@+id/linearLayout"
-            android:clickable="true"
-            android:contentDescription="@string/cancel_appointments"
-            app:srcCompat="@mipmap/ic_cancel_black_36dp" />
-
-        <TextView
-            android:id="@+id/position"
-            android:layout_width="170dp"
-            android:layout_height="100dp"
-            android:layout_below="@+id/q_id"
-            android:layout_toEndOf="@+id/queue_image"
-            android:gravity="center_vertical"
-            android:paddingEnd="1dp"
-            android:paddingStart="20dp"
-            android:textAlignment="center"
-            android:textColor="@color/black"
-            android:textSize="50sp" />
-
-        <TextView
-            android:id="@+id/q_id"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
-            android:textColor="@color/black"
-            android:textSize="17sp" />
-
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/preferences"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_below="@+id/queue_image"
-            android:layout_marginStart="38dp"
-            android:clickable="true"
-            app:fabSize="mini"
-            app:srcCompat="@mipmap/preferences" />
-
-    </RelativeLayout>
-
-</com.baoyz.widget.PullRefreshLayout>
+</RelativeLayout>

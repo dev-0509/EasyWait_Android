@@ -1,6 +1,7 @@
 package com.easywait.weapon_x.easywait;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.widget.Toast;
 
@@ -15,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.easywait.weapon_x.easywait.Globals.server;
-import static com.easywait.weapon_x.easywait.SignUp.MyPreferences;
+import static com.easywait.weapon_x.easywait.SignUp_Activity.MyPreferences;
 
 class SignIn_Method {
 

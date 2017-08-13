@@ -5,18 +5,23 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -34,6 +39,8 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.baoyz.widget.PullRefreshLayout;
+
 import android.content.SharedPreferences;
 
 import org.json.JSONArray;
@@ -44,9 +51,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.content.ContentValues.TAG;
 import static com.easywait.weapon_x.easywait.Globals.isSignedIn;
 import static com.easywait.weapon_x.easywait.Globals.server;
-import static com.easywait.weapon_x.easywait.SignUp.MyPreferences;
+import static com.easywait.weapon_x.easywait.SignUp_Activity.MyPreferences;
 
 public class Customer extends Fragment {
 
@@ -58,21 +66,26 @@ public class Customer extends Fragment {
 
     private FloatingActionButton search_queue;
 
-    private TextView queue_details;
+    private TextView queue_name_id;
     private TextView active_appointments;
+    private TextView current_position;
+    private TextView book_text_1;
+    private TextView book_text_2;
 
     private ImageView queue_image;
-    private ImageView home;
+    private ImageView book_button_1;
+    private ImageView book_button_2;
+    private ImageView refresh;
 
-    private Button book_button;
+    private EditText q_id_box;
 
-    private EditText queue_id;
+    private Button refresh_2;
 
     private ViewGroup viewGroup = null;
 
     private Snackbar snackbar;
 
-    private String token = null;
+    private String token = null, queue_id = null, details[] = new String[ 5 ];
 
     private ListView appointments_list;
 
@@ -81,6 +94,8 @@ public class Customer extends Fragment {
     ArrayAdapter<String> adapter;
 
     View rootView;
+
+    boolean active_appointments_present = false;
 
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container,
@@ -99,22 +114,49 @@ public class Customer extends Fragment {
 
         });
 
+        rootView.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+
+                InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(rootView.getWindowToken(), 0);
+
+                return false;
+            }
+
+        });
+
         search_queue = ( FloatingActionButton ) rootView.findViewById( R.id.search_q_button );
 
-        queue_details = ( TextView ) rootView.findViewById( R.id.q_details );
-        queue_details.setVisibility( View.INVISIBLE );
+        queue_name_id = ( TextView ) rootView.findViewById( R.id.q_name_id );
+        queue_name_id.setVisibility( View.INVISIBLE );
         active_appointments = (TextView) rootView.findViewById( R.id.active_appointments );
         active_appointments.setVisibility( View.INVISIBLE );
+        current_position = (TextView) rootView.findViewById( R.id.current_position );
+        current_position.setVisibility( View.INVISIBLE );
+
+        book_text_1 = (TextView) rootView.findViewById( R.id.book_text_1 );
+        book_text_2 = (TextView) rootView.findViewById( R.id.book_text_2 );
+        book_text_1.setVisibility( View.INVISIBLE );
+        book_text_2.setVisibility( View.INVISIBLE );
 
         queue_image = ( ImageView ) rootView.findViewById( R.id.queue_image );
-        home = (ImageView) rootView.findViewById( R.id.home );
-        queue_image.setVisibility( View.INVISIBLE );
-        home.setVisibility( View.VISIBLE );
+        queue_image.setVisibility( View.VISIBLE );
 
-        book_button = ( Button ) rootView.findViewById( R.id.book_button );
-        book_button.setVisibility( View.INVISIBLE );
+        book_button_1 = (ImageView) rootView.findViewById( R.id.book_button_1 );
+        book_button_1.setVisibility( View.INVISIBLE );
 
-        queue_id = ( EditText ) rootView.findViewById( R.id.queue_id );
+        book_button_2 = (ImageView) rootView.findViewById( R.id.book_button_2 );
+        book_button_2.setVisibility( View.INVISIBLE );
+
+        refresh = (ImageView) rootView.findViewById( R.id.refresh );
+        refresh.setVisibility( View.INVISIBLE );
+
+        refresh_2 = (Button) rootView.findViewById( R.id.refresh2 );
+        refresh_2.setVisibility( View.INVISIBLE );
+
+        q_id_box = ( EditText ) rootView.findViewById( R.id.queue_id );
 
         appointments_list = (ListView) rootView.findViewById( R.id.appointments_list );
         appointments_list.setVisibility( View.INVISIBLE );
@@ -130,25 +172,17 @@ public class Customer extends Fragment {
 
         super.onViewCreated(view, savedInstanceState);
 
-        String q_id = getContext().getSharedPreferences("MyPrefs" , Context.MODE_PRIVATE).getString( "queue_id" , null );
-
-        if ( q_id != null ) {
-
-            String url = q_details_url;
-
-            queue_id.setText(q_id);
-
-            getAndDisplayDetails( url + q_id );
-
-            fetchActiveAppointments();
-
-        }
+        queue_id = getContext().getSharedPreferences("MyPrefs" , Context.MODE_PRIVATE).getString( "queue_id" , null );
 
         fetchToken();
 
+        if ( queue_id != null )
+
+            fetchActiveAppointments( false );
+
         setQueueDetails();
 
-        book_button.setOnClickListener(new View.OnClickListener() {
+        book_button_1.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
@@ -216,6 +250,62 @@ public class Customer extends Fragment {
 
         });
 
+        book_button_2.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+
+                final android.support.v7.app.AlertDialog.Builder builder = new AlertDialog.Builder( getContext() );
+
+                final View view = LayoutInflater.from( getContext() ).inflate( R.layout.fragment_alert_dialog_2, null );
+
+                builder.setIcon( R.drawable.ic_delete_forever_black_48dp )
+
+                        .setPositiveButton("Book", new DialogInterface.OnClickListener() {
+
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                                EditText book_reference = (EditText) view.findViewById( R.id.booking_reference );
+
+                                if ( TextUtils.isEmpty( book_reference.getText().toString().trim() ) )
+
+                                    Toast.makeText( getContext() , "Please Name your Appointment!", Toast.LENGTH_SHORT).show();
+
+                                else
+
+                                    appointmentHandler( "book" , book_reference.getText().toString().trim() );
+
+                            }
+
+                        })
+
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+
+                        })
+
+                        .setIcon( R.mipmap.book_image )
+
+                        .setTitle( "Place an Appointment" );
+
+                builder.setView( view );
+
+                AlertDialog dialog = builder.create();
+
+                dialog.show();
+
+                dialog.getButton( DialogInterface.BUTTON_POSITIVE).setTextColor( getResources().getColor( R.color.black ) );
+                dialog.getButton( DialogInterface.BUTTON_NEGATIVE).setTextColor( getResources().getColor( R.color.black ) );
+
+            }
+
+        });
+
         TabLayout tabLayout = (TabLayout) getActivity().findViewById(R.id.tabs);
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -237,13 +327,9 @@ public class Customer extends Fragment {
 
                             snackbar.show();
 
-                    if ( queue_details.getVisibility() == View.VISIBLE ) {
+                    if ( queue_name_id.getVisibility() == View.VISIBLE )
 
-                        String url = q_details_url;
-
-                        getAndDisplayDetails( url + queue_id.getText().toString().trim() );
-
-                    }
+                        fetchActiveAppointments( false );
 
                 }
 
@@ -286,7 +372,7 @@ public class Customer extends Fragment {
 
                 final android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder( getContext() );
 
-                View v = LayoutInflater.from( getContext() ).inflate( R.layout.fragment_alert_dialog_1, null );
+                View v = LayoutInflater.from( getContext() ).inflate( R.layout.fragment_alert_dialog_3, null );
 
                 builder.setIcon( R.drawable.ic_delete_forever_black_48dp )
 
@@ -316,6 +402,23 @@ public class Customer extends Fragment {
 
                                     snackbar.show();
 
+                                    if ( details[ 2 ].equals( "Appointments Open" ) ) {
+
+                                        book_text_2.setVisibility(View.INVISIBLE);
+                                        book_button_2.setVisibility(View.INVISIBLE);
+
+                                        book_text_1.setVisibility(View.VISIBLE);
+                                        book_button_1.setVisibility(View.VISIBLE);
+
+                                    } else {
+
+                                        book_text_2.setVisibility(View.INVISIBLE);
+                                        book_button_2.setVisibility(View.INVISIBLE);
+                                        book_text_1.setVisibility(View.INVISIBLE);
+                                        book_button_1.setVisibility(View.INVISIBLE);
+
+                                    }
+
                                 }
 
                             }
@@ -344,6 +447,19 @@ public class Customer extends Fragment {
 
         });
 
+        refresh.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+
+                fetchActiveAppointments( false );
+
+                Toast.makeText( getContext() , "Status Refreshed!" , Toast.LENGTH_SHORT ).show();
+
+            }
+
+        });
+
     }
 
     private void fetchToken() {
@@ -364,7 +480,11 @@ public class Customer extends Fragment {
                         @Override
                         public void onClick(View v) {
 
-                            Intent intent = new Intent(getActivity(), SignUp.class);
+                            snackbar.dismiss();
+
+                            snackbar = null;
+
+                            Intent intent = new Intent(getActivity(), SignUp_Activity.class);
 
                             startActivity(intent);
 
@@ -391,96 +511,82 @@ public class Customer extends Fragment {
             @Override
             public void onClick(View v) {
 
-                fetchToken();
+                InputMethodManager imm = ( InputMethodManager ) getActivity().getSystemService( Context.INPUT_METHOD_SERVICE );
+                imm.hideSoftInputFromWindow( q_id_box.getWindowToken() , 0 );
+
+                if ( TextUtils.isEmpty( q_id_box.getText().toString().trim() ) ) {
+
+                    Toast.makeText( getContext() , "Please Specify a Queue Id!", Toast.LENGTH_SHORT).show();
+
+                    return;
+
+                }
+
+                queue_id = q_id_box.getText().toString().trim();
+
+                active_appointments_present = false;
 
                 SharedPreferences sharedpreferences = getContext().getSharedPreferences( MyPreferences , Context.MODE_APPEND );
                 SharedPreferences.Editor editor = sharedpreferences.edit();
 
-                editor.putString( "queue_id" , queue_id.getText().toString().trim() );
+                editor.putString( "queue_id" , queue_id );
                 editor.apply();
 
                 if( snackbar != null )
 
                     snackbar.dismiss();
 
-                InputMethodManager imm = ( InputMethodManager ) getActivity().getSystemService( Context.INPUT_METHOD_SERVICE );
-                imm.hideSoftInputFromWindow( queue_id.getWindowToken() , 0 );
+                clearUIViews();
 
-                queue_details.setText( "" );
+                String url = q_details_url;
 
-                book_button.setVisibility( View.INVISIBLE );
-                queue_details.setVisibility( View.INVISIBLE );
-                queue_image.setVisibility( View.INVISIBLE );
-                home.setVisibility( View.INVISIBLE );
-                appointments_list.setVisibility( View.INVISIBLE );
-                active_appointments.setVisibility( View.INVISIBLE );
+                getAndDisplayDetails( url + queue_id );
 
-                fetchActiveAppointments();
-
-                String url_copy = q_details_url;
-
-                if ( TextUtils.isEmpty( queue_id.getText().toString().trim() ) ) {
-
-                    Snackbar.make( viewGroup , "Please Specify a Queue Id!" , Snackbar.LENGTH_LONG )
-                            .setAction("Action", null ).show();
-
-                    return;
-
-                } else
-
-                    url_copy += queue_id.getText().toString().trim();
-
-                getAndDisplayDetails( url_copy );
+                fetchActiveAppointments( true );
 
             }
 
         });
 
-        queue_id.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        q_id_box.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 
                 if ( actionId == EditorInfo.IME_ACTION_SEARCH ) {
 
+                    InputMethodManager imm = ( InputMethodManager ) getActivity().getSystemService( Context.INPUT_METHOD_SERVICE );
+                    imm.hideSoftInputFromWindow( q_id_box.getWindowToken() , 0 );
+
+                    if ( TextUtils.isEmpty( q_id_box.getText().toString().trim() ) ) {
+
+                        Toast.makeText( getContext() , "Please Specify a Queue Id!", Toast.LENGTH_SHORT).show();
+
+                        return false;
+
+                    }
+
+                    queue_id = q_id_box.getText().toString().trim();
+
+                    active_appointments_present = false;
+
+                    clearUIViews();
+
                     SharedPreferences sharedpreferences = getContext().getSharedPreferences( MyPreferences , Context.MODE_APPEND );
                     SharedPreferences.Editor editor = sharedpreferences.edit();
 
-                    editor.putString( "queue_id" , queue_id.getText().toString().trim() );
+                    editor.putString( "queue_id" , queue_id );
                     editor.apply();
 
                     if( snackbar != null )
 
                         snackbar.dismiss();
 
-                    InputMethodManager imm = ( InputMethodManager ) getActivity().getSystemService( Context.INPUT_METHOD_SERVICE );
-                    imm.hideSoftInputFromWindow( queue_id.getWindowToken() , 0 );
+                    fetchActiveAppointments( true );
 
-                    queue_details.setText( "" );
+                    String url = q_details_url;
 
-                    book_button.setVisibility( View.INVISIBLE );
-                    queue_details.setVisibility( View.INVISIBLE );
-                    queue_image.setVisibility( View.INVISIBLE );
-                    home.setVisibility( View.INVISIBLE );
-                    appointments_list.setVisibility( View.INVISIBLE );
-                    active_appointments.setVisibility( View.INVISIBLE );
-
-                    fetchActiveAppointments();
-
-                    String url_copy = q_details_url;
-
-                    if ( TextUtils.isEmpty( queue_id.getText().toString().trim() ) ) {
-
-                        Snackbar.make( viewGroup , "Please Specify a Queue Id!" , Snackbar.LENGTH_LONG )
-                                .setAction("Action", null ).show();
-
-                        return false;
-
-                    } else
-
-                        url_copy += queue_id.getText().toString().trim();
-
-                    getAndDisplayDetails( url_copy );
+                    getAndDisplayDetails( url + queue_id );
 
                 }
 
@@ -494,7 +600,7 @@ public class Customer extends Fragment {
 
     private void getAndDisplayDetails(String queue_details_url) {
 
-        home.setVisibility( View.INVISIBLE );
+        queue_image.setVisibility( View.INVISIBLE );
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, queue_details_url,
                 new Response.Listener<String>() {
@@ -541,13 +647,11 @@ public class Customer extends Fragment {
 
     private void displayQueueDetails(final JSONObject object) {
 
-        final String details[] = new String[ 5 ];
-
         try {
 
-            details[ 0 ] = "Queue Name: " + object.getString( "name" );
+            details[ 0 ] = "Queue " + queue_id + " : " + object.getString( "name" );
 
-            details[ 1 ] = "Current Position: " + object.getString( "position" );
+            details[ 1 ] = object.getString( "position" );
 
             if ( object.getString( "accepting_appointments" ).equals( "1" ) ) {
 
@@ -563,23 +667,48 @@ public class Customer extends Fragment {
 
         }
 
-        if ( queue_details.getVisibility() == View.VISIBLE ) {
+        if ( queue_name_id.getVisibility() == View.VISIBLE ) {
 
-            queue_details.setText( details[ 0 ] + "\n\n" );
-            queue_details.append( details[ 1 ] + "\n\n" );
-            queue_details.append( details[ 2 ] );
+            queue_name_id.setText( details[ 0 ] );
 
-            if ( details[ 2 ].equals( "Appointments Closed" ) )
+            current_position.setText( details[ 1 ] );
 
-                book_button.setVisibility( View.INVISIBLE );
+            if ( details[ 2 ].equals( "Appointments Open" ) ) {
 
-            else
+                if (active_appointments_present) {
 
-                book_button.setVisibility( View.VISIBLE );
+                    book_text_1.setVisibility(View.INVISIBLE);
+                    book_button_1.setVisibility(View.INVISIBLE);
+
+                    book_text_2.setVisibility(View.VISIBLE);
+                    book_button_2.setVisibility(View.VISIBLE);
+
+                } else {
+
+                    book_text_2.setVisibility(View.INVISIBLE);
+                    book_button_2.setVisibility(View.INVISIBLE);
+
+                    book_text_1.setVisibility(View.VISIBLE);
+                    book_button_1.setVisibility(View.VISIBLE);
+
+                }
+
+            }
+
+            else {
+
+                Toast.makeText( getContext() , "Appointments to this Queue are currently Closed" , Toast.LENGTH_LONG).show();
+
+                book_text_1.setVisibility( View.INVISIBLE );
+                book_button_1.setVisibility( View.INVISIBLE );
+                book_text_2.setVisibility( View.INVISIBLE );
+                book_button_2.setVisibility( View.INVISIBLE );
+
+            }
 
         } else {
 
-            ObjectAnimator.ofFloat(queue_id, "translationY", 0.0f, -300.0f)
+            ObjectAnimator.ofFloat(q_id_box, "translationY", 0.0f, -300.0f)
                     .setDuration(1200).start();
 
             final ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(search_queue, "translationY", 0.0f, -300.0f)
@@ -597,16 +726,44 @@ public class Customer extends Fragment {
                 @Override
                 public void onAnimationEnd(Animator animation) {
 
-                    queue_details.setText(details[0] + "\n\n");
-                    queue_details.append(details[1] + "\n\n");
-                    queue_details.append(details[2]);
+                    q_id_box.setText( "" );
 
-                    queue_details.setVisibility(View.VISIBLE);
-                    queue_image.setVisibility(View.VISIBLE);
+                    queue_name_id.setText( details[ 0 ] );
 
-                    if (details[2].equals("Appointments Open"))
+                    current_position.setText( details[ 1 ] );
 
-                        book_button.setVisibility(View.VISIBLE);
+                    queue_name_id.setVisibility(View.VISIBLE);
+                    current_position.setVisibility(View.VISIBLE);
+
+                    refresh.setVisibility( View.VISIBLE );
+                    refresh_2.setVisibility( View.VISIBLE );
+
+                    if ( details[ 2 ].equals( "Appointments Open" ) ) {
+
+                        if (active_appointments_present) {
+
+                            book_text_2.setVisibility(View.VISIBLE);
+                            book_button_2.setVisibility(View.VISIBLE);
+
+                        } else {
+
+                            book_text_1.setVisibility(View.VISIBLE);
+                            book_button_1.setVisibility(View.VISIBLE);
+
+                        }
+
+                    }
+
+                    else {
+
+                        Toast.makeText( getContext() , "Appointments to this Queue are currently Closed" , Toast.LENGTH_LONG).show();
+
+                        book_text_1.setVisibility( View.INVISIBLE );
+                        book_button_1.setVisibility( View.INVISIBLE );
+                        book_text_2.setVisibility( View.INVISIBLE );
+                        book_button_2.setVisibility( View.INVISIBLE );
+
+                    }
 
                 }
 
@@ -626,15 +783,23 @@ public class Customer extends Fragment {
 
     }
 
-    private void fetchActiveAppointments() {
+    private void fetchActiveAppointments( final boolean isCalledOnButtonCLick ) {
 
-        String appointments_url = server + "api/queue/" + queue_id.getText().toString().trim() + "/appointment";
+        final String appointments_url = server + "api/queue/" + queue_id + "/appointment";
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET , appointments_url ,
                 new Response.Listener<String>() {
 
                     @Override
                     public void onResponse(String response) {
+
+                        if ( ! isCalledOnButtonCLick ) {
+
+                            String url = q_details_url;
+
+                            getAndDisplayDetails(url + queue_id);
+
+                        }
 
                         try {
 
@@ -656,6 +821,8 @@ public class Customer extends Fragment {
 
                             appointments_list.setAdapter(adapter);
 
+                            active_appointments_present = true;
+
                             active_appointments.setVisibility( View.VISIBLE );
                             appointments_list.setVisibility( View.VISIBLE );
 
@@ -665,6 +832,17 @@ public class Customer extends Fragment {
                                     .setAction("Action", null);
 
                             snackbar.show();
+
+                            list.clear();
+
+                            if ( adapter != null )
+
+                                adapter.notifyDataSetChanged();
+
+                            active_appointments.setVisibility( View.INVISIBLE );
+                            appointments_list.setVisibility( View.INVISIBLE );
+
+                            active_appointments_present = false;
 
                         }
 
@@ -676,10 +854,33 @@ public class Customer extends Fragment {
                     @Override
                     public void onErrorResponse(VolleyError error) {
 
-                        snackbar = Snackbar.make( rootView , "Sign In for more", Snackbar.LENGTH_INDEFINITE)
-                                .setAction("Action", null);
+                        if ( ! isCalledOnButtonCLick ) {
 
-                        snackbar.show();
+                            String url = q_details_url;
+
+                            getAndDisplayDetails(url + queue_id);
+
+                        }
+
+                        snackbar = Snackbar.make(viewGroup, "Sign In for More", Snackbar.LENGTH_INDEFINITE)
+                                .setAction("SIGN IN", new View.OnClickListener() {
+
+                                    @Override
+                                    public void onClick(View v) {
+
+                                        if ( snackbar != null )
+
+                                            snackbar.dismiss();
+
+                                        Intent intent = new Intent(getActivity(), SignIn_Activity.class);
+
+                                        startActivityForResult( intent , 1 , new Bundle() );
+
+                                    }
+
+                                });
+
+                        snackbar.setActionTextColor(getResources().getColor(R.color.snackbar)).show();
 
                     }
 
@@ -703,9 +904,27 @@ public class Customer extends Fragment {
 
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if ( requestCode == 1 ) {
+
+            book_text_1.setVisibility( View.INVISIBLE );
+            book_button_1.setVisibility( View.INVISIBLE );
+
+            fetchToken();
+
+            fetchActiveAppointments( false );
+
+        }
+
+    }
+
     private void appointmentHandler(final String action , final String parameter) {
 
-        final String appointments_url = server + "api/queue/" + queue_id.getText().toString().trim() + "/appointment";
+        final String appointments_url = server + "api/queue/" + queue_id + "/appointment";
 
         StringRequest stringRequest = new StringRequest( Request.Method.POST , appointments_url ,
                 new Response.Listener<String>() {
@@ -737,13 +956,19 @@ public class Customer extends Fragment {
                                     snackbar.dismiss();
                                     snackbar = null;
 
+                                    book_text_1.setVisibility( View.INVISIBLE );
+                                    book_button_1.setVisibility( View.INVISIBLE );
+
+                                    book_text_2.setVisibility( View.VISIBLE );
+                                    book_button_2.setVisibility( View.VISIBLE );
+
                                 }
 
                             }
 
                         } catch (Exception e) {
 
-                            Toast.makeText( getContext() , "error here!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText( getContext() , e.toString(), Toast.LENGTH_SHORT).show();
 
                             e.printStackTrace();
 
@@ -816,6 +1041,26 @@ public class Customer extends Fragment {
         if ( isVisibleToUser && rootView != null )
 
             token = this.getActivity().getSharedPreferences("MyPrefs" , Context.MODE_PRIVATE).getString( "token" , null );
+
+    }
+
+    private void clearUIViews() {
+
+        queue_name_id.setText( "" );
+        current_position.setText( "" );
+
+        book_text_1.setVisibility( View.INVISIBLE );
+        book_button_1.setVisibility( View.INVISIBLE );
+        book_text_2.setVisibility( View.INVISIBLE );
+        book_button_2.setVisibility( View.INVISIBLE );
+
+        queue_name_id.setVisibility( View.INVISIBLE );
+        queue_image.setVisibility( View.INVISIBLE );
+        queue_image.setVisibility( View.INVISIBLE );
+        appointments_list.setVisibility( View.INVISIBLE );
+        active_appointments.setVisibility( View.INVISIBLE );
+        refresh.setVisibility( View.INVISIBLE );
+        refresh_2.setVisibility( View.INVISIBLE );
 
     }
 

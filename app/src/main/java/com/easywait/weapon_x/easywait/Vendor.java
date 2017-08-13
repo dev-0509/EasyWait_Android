@@ -14,6 +14,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -61,11 +62,9 @@ public class Vendor extends Fragment {
 
     ListView q_list;
 
-    Boolean prompt_for_signup = false;
-
     String token;
 
-    Snackbar snackbar = null;
+    Snackbar snackbar;
 
     List<String> list = new ArrayList<>();
 
@@ -90,6 +89,19 @@ public class Vendor extends Fragment {
                     InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(rootView.getWindowToken(), 0);
 
+                }
+
+            });
+
+            rootView.setOnTouchListener(new View.OnTouchListener() {
+
+                @Override
+                public boolean onTouch(View view, MotionEvent motionEvent) {
+
+                    InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(rootView.getWindowToken(), 0);
+
+                    return false;
                 }
 
             });
@@ -119,10 +131,6 @@ public class Vendor extends Fragment {
 
         super.onViewCreated(view, savedInstanceState);
 
-        if ( getContext() == null )
-
-            Log.d( TAG , "context is null" );
-
         active_queues.setVisibility( View.INVISIBLE );
         queue_image.setVisibility( View.INVISIBLE );
         q_list.setVisibility( View.INVISIBLE );
@@ -142,7 +150,7 @@ public class Vendor extends Fragment {
 
                             snackbar = null;
 
-                        else
+                        else if ( token == null )
 
                             snackbar.show();
 
@@ -176,7 +184,11 @@ public class Vendor extends Fragment {
                         @Override
                         public void onClick(View v) {
 
-                            Intent intent = new Intent(getActivity(), SignUp.class);
+                            snackbar.dismiss();
+
+                            snackbar = null;
+
+                            Intent intent = new Intent(getActivity(), SignUp_Activity.class);
 
                             startActivity(intent);
 
@@ -251,11 +263,7 @@ public class Vendor extends Fragment {
         email = shared.getString( "email" , null );
         password = shared.getString( "password" , null );
 
-        if( token == null )
-
-            prompt_for_signup = true;
-
-        else
+        if( token != null )
 
             if (new SignIn_Method().signIn(email, password, getContext()))
 
@@ -377,7 +385,7 @@ public class Vendor extends Fragment {
             }
         };
 
-        RequestQueue requestQueue = Volley.newRequestQueue( getActivity() );
+        RequestQueue requestQueue = Volley.newRequestQueue( this.getContext() );
         requestQueue.add( stringRequest );
 
     }
@@ -458,33 +466,6 @@ public class Vendor extends Fragment {
                                             active_queues.setVisibility(View.VISIBLE);
                                             queue_image.setVisibility(View.VISIBLE);
 
-                                            q_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-                                                @Override
-                                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                                                    Bundle bundle = new Bundle();
-
-                                                    bundle.putString("queue_id", ((TextView) view).getText().toString());
-
-                                                    Queue_Status_Fragment queue_status_fragment = new Queue_Status_Fragment();
-
-                                                    queue_status_fragment.setArguments(bundle);
-
-                                                    FragmentTransaction trans = getFragmentManager().beginTransaction();
-
-                                                    trans.replace(R.id.root_frame_vendor, queue_status_fragment);
-
-                                                    trans.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-
-                                                    trans.addToBackStack(null);
-
-                                                    trans.commit();
-
-                                                }
-
-                                            });
-
                                         } catch (Exception e) {
 
                                             Snackbar.make( rootView , "No Active Queues", Snackbar.LENGTH_LONG)
@@ -550,7 +531,7 @@ public class Vendor extends Fragment {
             }
         };
 
-        RequestQueue requestQueue = Volley.newRequestQueue( getActivity() );
+        RequestQueue requestQueue = Volley.newRequestQueue( this.getContext() );
         requestQueue.add( stringRequest );
 
     }

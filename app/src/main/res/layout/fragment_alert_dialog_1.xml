@@ -1,7 +1,28 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#d1e964"
-    android:alpha="0.7">
+    android:layout_height="match_parent">
+
+    <EditText
+        android:id="@+id/rand_number"
+        android:paddingBottom="15dp"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:hint="@string/enter_the_number"
+        android:layout_marginTop="19dp"
+        android:layout_below="@+id/number"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:id="@+id/number"
+        android:textSize="30sp"
+        android:textColor="@color/black"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="41dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
