@@ -139,18 +139,13 @@ public class Vendor extends Fragment {
 
                     if (snackbar != null)
 
-                        if ( isSignedIn ) {
-                            Toast.makeText( getContext() , "signed in", Toast.LENGTH_SHORT).show();
+                        if ( isSignedIn )
+
                             snackbar = null;
 
-                        }
-
-                        else if ( token == null ) {
-                            Toast.makeText( getContext() , "not signed in", Toast.LENGTH_SHORT).show();
+                        else if ( token == null )
 
                             snackbar.show();
-
-                        }
 
                 }
 

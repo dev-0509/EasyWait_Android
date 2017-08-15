@@ -307,13 +307,11 @@ public class Customer extends Fragment {
 
                     if (snackbar != null)
 
-                        if ( isSignedIn ) {
-
-                            //isSignedIn = false;
+                        if ( isSignedIn )
 
                             snackbar = null;
 
-                        } else
+                        else
 
                             snackbar.show();
 
