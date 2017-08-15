@@ -5,23 +5,19 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.nfc.Tag;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -32,26 +28,20 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.baoyz.widget.PullRefreshLayout;
-
 import android.content.SharedPreferences;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static android.content.ContentValues.TAG;
 import static com.easywait.weapon_x.easywait.Globals.isSignedIn;
 import static com.easywait.weapon_x.easywait.Globals.server;
 import static com.easywait.weapon_x.easywait.SignUp_Activity.MyPreferences;
@@ -319,7 +309,7 @@ public class Customer extends Fragment {
 
                         if ( isSignedIn ) {
 
-                            isSignedIn = false;
+                            //isSignedIn = false;
 
                             snackbar = null;
 

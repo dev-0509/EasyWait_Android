@@ -3,9 +3,6 @@ package com.easywait.weapon_x.easywait;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.constraint.ConstraintLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -57,6 +54,9 @@ public class SignUp_Activity extends AppCompatActivity {
         password = ( EditText ) findViewById( R.id.password );
 
         Button sign_up_button = (Button) findViewById(R.id.sign_up_button);
+
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(email.getWindowToken(), 0);
 
         sign_up_button.setOnClickListener(new View.OnClickListener() {
 
@@ -124,6 +124,8 @@ public class SignUp_Activity extends AppCompatActivity {
 
                             Toast.makeText( SignUp_Activity.this, "Welcome to EasyWait!", Toast.LENGTH_LONG).show();
 
+                            setResult( 2 );
+
                             finish();
 
                         }
@@ -139,10 +141,18 @@ public class SignUp_Activity extends AppCompatActivity {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
+                        
+                        if ( error.networkResponse.statusCode == 401 )
 
-                        Toast toast = Toast.makeText( SignUp_Activity.this, "Registration failed! Please try later..." , Toast.LENGTH_LONG);
-                        toast.setGravity( Gravity.CENTER , 0 , 0 );
-                        toast.show();
+                            Toast.makeText( SignUp_Activity.this , "Already Registered!" , Toast.LENGTH_SHORT ).show();
+
+                        else {
+
+                            Toast toast = Toast.makeText(SignUp_Activity.this, "Registration failed! Please try later...", Toast.LENGTH_LONG);
+                            toast.setGravity(Gravity.CENTER, 0, 0);
+                            toast.show();
+
+                        }
 
                     }
 

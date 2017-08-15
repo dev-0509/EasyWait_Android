@@ -1,5 +1,6 @@
 package com.easywait.weapon_x.easywait;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -24,6 +25,9 @@ public class Cust_Vend_Controller extends AppCompatActivity {
 
         mViewPager.setOffscreenPageLimit( 3 );
 
+        String operating_as = getSharedPreferences("MyPrefs" , Context.MODE_PRIVATE).
+                getString( "operating_as" , null );
+
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
@@ -32,6 +36,24 @@ public class Cust_Vend_Controller extends AppCompatActivity {
         tabLayout.getTabAt( 0 ).setIcon( R.drawable.cust );
         tabLayout.getTabAt( 1 ).setIcon( R.drawable.vend );
         tabLayout.getTabAt( 2 ).setIcon( R.drawable.profile );
+
+        if ( operating_as != null ) {
+
+            if ( operating_as.equals( "customer" ) ) {
+
+                TabLayout.Tab tab = tabLayout.getTabAt( 0 );
+
+                tab.select();
+
+            } else {
+
+                TabLayout.Tab tab = tabLayout.getTabAt( 1 );
+
+                tab.select();
+
+            }
+
+        }
 
     }
 

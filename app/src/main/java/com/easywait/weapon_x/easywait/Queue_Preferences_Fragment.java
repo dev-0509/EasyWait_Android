@@ -1,39 +1,27 @@
 package com.easywait.weapon_x.easywait;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.widget.ArrayAdapter;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-
-import org.json.JSONArray;
 import org.json.JSONObject;
-
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import static android.content.ContentValues.TAG;
 import static com.easywait.weapon_x.easywait.Globals.server;
 
 public class Queue_Preferences_Fragment extends Fragment {
@@ -55,13 +43,24 @@ public class Queue_Preferences_Fragment extends Fragment {
 
         super.onCreateView(inflater, container, savedInstanceState);
 
-        View rootView = inflater.inflate(R.layout.fragment_queue_preferences, container, false);
+        final View rootView = inflater.inflate(R.layout.fragment_queue_preferences, container, false);
 
         initial_slot_no = (EditText) rootView.findViewById( R.id.initial_slot_number );
 
         recurring_slot_no = (EditText) rootView.findViewById( R.id.recurring_slot_number );
 
         set = (Button) rootView.findViewById( R.id.set );
+
+        rootView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(rootView.getWindowToken(), 0);
+
+            }
+
+        });
 
         return rootView;
 
@@ -72,7 +71,7 @@ public class Queue_Preferences_Fragment extends Fragment {
 
         super.onViewCreated(view, savedInstanceState);
 
-        queue_id = getArguments().getString( "queue_id" ).substring( 0 , 2 );
+        queue_id = getArguments().getString( "queue_id" );
 
         fetchToken();
 

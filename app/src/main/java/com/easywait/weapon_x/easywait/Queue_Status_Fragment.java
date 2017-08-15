@@ -11,7 +11,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,30 +18,24 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.baoyz.widget.PullRefreshLayout;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import static android.content.ContentValues.TAG;
 import static com.easywait.weapon_x.easywait.Globals.server;
 
 public class Queue_Status_Fragment extends Fragment {
@@ -70,11 +63,13 @@ public class Queue_Status_Fragment extends Fragment {
 
     private Snackbar snackbar = null;
 
+    private View rootView = null;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-        View rootView = inflater.inflate(R.layout.fragment_queue_status, container, false);
+        rootView = inflater.inflate(R.layout.fragment_queue_status, container, false);
 
         position = (TextView) rootView.findViewById( R.id.position );
         q_id_name = (TextView) rootView.findViewById( R.id.q_id );
@@ -102,214 +97,225 @@ public class Queue_Status_Fragment extends Fragment {
 
         super.onResume();
 
-        queue_id = getArguments().getString( "queue_id" ).substring( 0 , 2 );
+        if ( rootView.getParent() != null ) {
 
-        q_id_name.setText( "Queue " + queue_id + "  :  " + getArguments().getString( "queue_id" ).substring( 5 ) );
+            queue_id = getArguments().getString( "queue_id" );
+            String queue_name = getArguments().getString( "queue_name" );
 
-        fetchToken();
+            q_id_name.setText( "Queue " + queue_id + "  :  " + queue_name );
 
-        fetchAppointments();
+            fetchToken();
 
-        updateCurrentPosition();
+            fetchAppointments();
 
-        TabLayout tabLayout = (TabLayout) getActivity().findViewById(R.id.tabs);
+            updateCurrentPosition();
 
-        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            TabLayout tabLayout = (TabLayout) getActivity().findViewById(R.id.tabs);
 
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
+            tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
 
-                if ( tab.getPosition() == 1 ) {
+                @Override
+                public void onTabSelected(TabLayout.Tab tab) {
+
+                    if (tab.getPosition() == 1) {
+
+                        if (snackbar != null)
+
+                            snackbar.show();
+
+                        fetchAppointments();
+
+                    }
+
+                }
+
+                @Override
+                public void onTabUnselected(TabLayout.Tab tab) {
 
                     if (snackbar != null)
 
-                        snackbar.show();
-
-                    fetchAppointments();
+                        snackbar.dismiss();
 
                 }
 
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-                if (snackbar != null)
-
-                    snackbar.dismiss();
-
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
-
-        });
-
-        aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-
-                aSwitch.setSwitchTextAppearance( getContext() , R.style.SwitchTextAppearance );
-
-                if ( isChecked ) {
-
-                    aSwitch.setText( "Open" );
-
-                    performAppointmentAction( "open" );
-
-                } else {
-
-                    aSwitch.setText( "Closed" );
-
-                    performAppointmentAction( "close" );
+                @Override
+                public void onTabReselected(TabLayout.Tab tab) {
 
                 }
 
-            }
+            });
 
-        });
+            aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
-        next.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-            @Override
-            public void onClick(View v) {
+                    aSwitch.setSwitchTextAppearance(getContext(), R.style.SwitchTextAppearance);
 
-                position.setText( Integer.toString( ( Integer.parseInt( position.getText().toString() ) ) + 1 ) );
+                    if (isChecked) {
 
-                performQueueAction( "movenext" );
+                        aSwitch.setText("Open");
 
-            }
+                        performAppointmentAction("open");
 
-        });
+                    } else {
 
-        reset.setOnClickListener(new View.OnClickListener() {
+                        aSwitch.setText("Closed");
 
-            @Override
-            public void onClick(View v) {
+                        performAppointmentAction("close");
 
-                position.setText( "0" );
+                    }
 
-                performQueueAction( "reset" );
+                }
 
-            }
+            });
 
-        });
+            next.setOnClickListener(new View.OnClickListener() {
 
-        cancel_appointments.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 
-            @Override
-            public void onClick(final View v) {
+                    position.setText(Integer.toString((Integer.parseInt(position.getText().toString())) + 1));
 
-                final android.support.v7.app.AlertDialog.Builder builder = new AlertDialog.Builder( getContext() );
+                    performQueueAction("movenext");
 
-                final View view = LayoutInflater.from( getContext() ).inflate( R.layout.fragment_alert_dialog_1, null );
+                }
 
-                final EditText input_number = (EditText) view.findViewById( R.id.rand_number);
-                final TextView rand_number = (TextView) view.findViewById( R.id.number );
+            });
 
-                rand_number.setText( Integer.toString( new Random().nextInt( 10 ) ) );
+            reset.setOnClickListener(new View.OnClickListener() {
 
-                builder.setIcon( R.drawable.ic_error_black_24dp )
+                @Override
+                public void onClick(View v) {
 
-                        .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+                    position.setText("0");
 
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
+                    performQueueAction("reset");
 
-                                if ( TextUtils.isEmpty( input_number.getText().toString().trim() ) )
+                }
 
-                                    Toast.makeText( getContext() , "Number cannot be blank!", Toast.LENGTH_SHORT).show();
+            });
 
-                                else {
+            cancel_appointments.setOnClickListener(new View.OnClickListener() {
 
-                                    if ( input_number.getText().toString().equals( rand_number.getText().toString() ) ) {
+                @Override
+                public void onClick(final View v) {
 
-                                        appointment_list.setVisibility(View.INVISIBLE);
-                                        cancel_appointments.setVisibility(View.INVISIBLE);
+                    final android.support.v7.app.AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
-                                        snackbar = Snackbar.make(getView(), "All Appointments Inactive", Snackbar.LENGTH_INDEFINITE)
-                                                .setAction("Action", null);
+                    final View view = LayoutInflater.from(getContext()).inflate(R.layout.fragment_alert_dialog_1, null);
 
-                                        snackbar.show();
+                    final EditText input_number = (EditText) view.findViewById(R.id.rand_number);
+                    final TextView rand_number = (TextView) view.findViewById(R.id.number);
 
-                                        performAppointmentAction("reset");
+                    rand_number.setText(Integer.toString(new Random().nextInt(10)));
 
-                                    } else
+                    builder.setIcon(R.drawable.ic_error_black_24dp)
 
-                                        Toast.makeText( getContext() , "Verification Unsuccessful", Toast.LENGTH_SHORT).show();
+                            .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                    if (TextUtils.isEmpty(input_number.getText().toString().trim()))
+
+                                        Toast.makeText(getContext(), "Number cannot be blank!", Toast.LENGTH_SHORT).show();
+
+                                    else {
+
+                                        if (input_number.getText().toString().equals(rand_number.getText().toString())) {
+
+                                            appointment_list.setVisibility(View.INVISIBLE);
+                                            cancel_appointments.setVisibility(View.INVISIBLE);
+
+                                            snackbar = Snackbar.make(rootView, "All Appointments Inactive", Snackbar.LENGTH_INDEFINITE)
+                                                    .setAction("Action", null);
+
+                                            snackbar.show();
+
+                                            performAppointmentAction("reset");
+
+                                        } else
+
+                                            Toast.makeText(getContext(), "Verification Unsuccessful", Toast.LENGTH_SHORT).show();
+
+                                    }
 
                                 }
 
-                            }
+                            })
 
-                        })
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
 
-                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
 
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
+                                }
 
-                            }
+                            })
 
-                        })
+                            .setTitle("Please verify your action!");
 
-                        .setTitle( "Please verify your action!" );
+                    builder.setView(view);
 
-                builder.setView( view );
+                    AlertDialog dialog = builder.create();
 
-                AlertDialog dialog = builder.create();
+                    dialog.show();
 
-                dialog.show();
+                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.black));
+                    dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.black));
 
-                dialog.getButton( DialogInterface.BUTTON_POSITIVE).setTextColor( getResources().getColor( R.color.black ) );
-                dialog.getButton( DialogInterface.BUTTON_NEGATIVE).setTextColor( getResources().getColor( R.color.black ) );
+                }
 
-            }
+            });
 
-        });
+            set_preferences.setOnClickListener(new View.OnClickListener() {
 
-        set_preferences.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 
-            @Override
-            public void onClick(View v) {
+                    if ( snackbar != null )
 
-                Bundle bundle = new Bundle();
+                        snackbar.dismiss();
 
-                bundle.putString( "queue_id" , queue_id );
+                    snackbar = null;
 
-                Queue_Preferences_Fragment queue_preferences_fragment = new Queue_Preferences_Fragment();
+                    Bundle bundle = new Bundle();
 
-                queue_preferences_fragment.setArguments( bundle );
+                    bundle.putString("queue_id", queue_id);
 
-                FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                    Queue_Preferences_Fragment queue_preferences_fragment = new Queue_Preferences_Fragment();
 
-                transaction.addToBackStack( null );
+                    queue_preferences_fragment.setArguments(bundle);
 
-                transaction.replace(R.id.root_frame_vendor, queue_preferences_fragment);
+                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
-                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                    transaction.addToBackStack(null);
 
-                transaction.commit();
+                    transaction.replace(R.id.root_frame_vendor, queue_preferences_fragment);
 
-            }
+                    transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
 
-        });
+                    transaction.commit();
 
-        refresh.setOnClickListener(new View.OnClickListener() {
+                }
 
-            @Override
-            public void onClick(View view) {
+            });
 
-                fetchAppointments();
+            refresh.setOnClickListener(new View.OnClickListener() {
 
-                Toast.makeText( getContext() , "Appointments Refreshed!" , Toast.LENGTH_SHORT ).show();
+                @Override
+                public void onClick(View view) {
 
-            }
+                    fetchAppointments();
 
-        });
+                    Toast.makeText(getContext(), "Appointments Refreshed!", Toast.LENGTH_SHORT).show();
+
+                }
+
+            });
+
+        }
 
     }
 
@@ -321,231 +327,249 @@ public class Queue_Status_Fragment extends Fragment {
 
     private void fetchAppointments() {
 
-        String appointments_url = server + "api/queue/" + queue_id + "/appointment";
+        if ( rootView.getParent() != null ) {
 
-        StringRequest stringRequest = new StringRequest(Request.Method.GET , appointments_url ,
-            new Response.Listener<String>() {
+            String appointments_url = server + "api/queue/" + queue_id + "/appointment";
 
-                @Override
-                public void onResponse(String response) {
+            StringRequest stringRequest = new StringRequest(Request.Method.GET, appointments_url,
+                    new Response.Listener<String>() {
 
-                    try {
+                        @Override
+                        public void onResponse(String response) {
 
-                        List<String> list = new ArrayList<>();
+                            try {
 
-                        JSONObject object = new JSONObject(response);
+                                List<String> list = new ArrayList<>();
 
-                        JSONArray appointments = object.getJSONArray("appointments");
+                                JSONObject object = new JSONObject(response);
 
-                        list.clear();
+                                JSONArray appointments = object.getJSONArray("appointments");
 
-                        for (int i = 0; i < appointments.length(); i++) {
+                                list.clear();
 
-                            JSONObject object1 = (JSONObject) appointments.get(i);
+                                for (int i = 0; i < appointments.length(); i++) {
 
-                            list.add(object1.getString("position") + " : " + object1.getString("reference"));
+                                    JSONObject object1 = (JSONObject) appointments.get(i);
+
+                                    list.add(object1.getString("position") + " : " + object1.getString("reference"));
+
+                                }
+
+                                ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, list);
+
+                                appointment_list.setAdapter(adapter);
+
+                                appointment_list.setVisibility(View.VISIBLE);
+                                cancel_appointments.setVisibility(View.VISIBLE);
+
+                                if (snackbar != null) {
+
+                                    snackbar.dismiss();
+
+                                    snackbar = null;
+
+                                }
+
+                            } catch (Exception e) {
+
+                                snackbar = Snackbar.make(rootView, "No Active Appointments", Snackbar.LENGTH_INDEFINITE)
+                                        .setAction("Action", null);
+
+                                snackbar.show();
+
+                                appointment_list.setVisibility(View.INVISIBLE);
+                                cancel_appointments.setVisibility(View.INVISIBLE);
+
+                            }
 
                         }
 
-                        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, list);
+                    },
+                    new Response.ErrorListener() {
 
-                        appointment_list.setAdapter(adapter);
-
-                        appointment_list.setVisibility( View.VISIBLE );
-                        cancel_appointments.setVisibility( View.VISIBLE );
-
-                        if ( snackbar != null ) {
-
-                            snackbar.dismiss();
-
-                            snackbar = null;
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
 
                         }
 
-                    } catch (Exception e) {
-
-                        snackbar = Snackbar.make(getView(), "No Active Appointments", Snackbar.LENGTH_INDEFINITE)
-                                .setAction("Action", null);
-
-                        snackbar.show();
-
-                        appointment_list.setVisibility( View.INVISIBLE );
-                        cancel_appointments.setVisibility( View.INVISIBLE );
-
-                    }
-
-                }
-
-            },
-            new Response.ErrorListener() {
-
+                    }) {
                 @Override
-                public void onErrorResponse(VolleyError error) {
+                public Map<String, String> getHeaders() {
+
+                    Map<String, String> headers = new HashMap<>();
+
+                    String auth = "Bearer " + token;
+                    headers.put("Authorization", auth);
+
+                    return headers;
 
                 }
 
-            }) {
-            @Override
-            public Map<String, String> getHeaders() {
+            };
 
-                Map<String, String> headers = new HashMap<>();
+            RequestQueue requestQueue = Volley.newRequestQueue(getContext());
+            requestQueue.add(stringRequest);
 
-                String auth = "Bearer " + token;
-                headers.put( "Authorization" , auth );
-
-                return headers;
-
-            }
-
-        };
-
-        RequestQueue requestQueue = Volley.newRequestQueue(getContext());
-        requestQueue.add(stringRequest);
+        }
 
     }
 
     private void updateCurrentPosition() {
 
-        String q_details_url = server + "api/queue/" + queue_id ;
+        if ( rootView.getParent() != null ) {
 
-        StringRequest stringRequest = new StringRequest(Request.Method.GET , q_details_url ,
-                new Response.Listener<String>() {
+            String q_details_url = server + "api/queue/" + queue_id;
 
-                    @Override
-                    public void onResponse(String response) {
+            StringRequest stringRequest = new StringRequest(Request.Method.GET, q_details_url,
+                    new Response.Listener<String>() {
 
-                        try {
+                        @Override
+                        public void onResponse(String response) {
 
-                            JSONObject object = new JSONObject( response );
+                            try {
 
-                            position.setText( object.getString( "position" ) );
+                                JSONObject object = new JSONObject(response);
 
-                            if ( object.getString( "accepting_appointments" ).equals( "1" ) ) {
+                                position.setText(object.getString("position"));
 
-                                aSwitch.setText( "Open" );
+                                if (object.getString("accepting_appointments").equals("1")) {
 
-                                aSwitch.setChecked( true );
+                                    aSwitch.setText("Open");
 
-                            } else {
+                                    aSwitch.setChecked(true);
 
-                                aSwitch.setText( "Closed" );
+                                } else {
 
-                                aSwitch.setChecked( false );
+                                    aSwitch.setText("Closed");
+
+                                    aSwitch.setChecked(false);
+
+                                }
+
+                            } catch (Exception e) {
+
+                                e.printStackTrace();
 
                             }
+                        }
+                    },
+                    new Response.ErrorListener() {
 
-                        } catch (Exception e) {
-
-                            e.printStackTrace();
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
 
                         }
-                    }
-                },
-                new Response.ErrorListener() {
 
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
+                    });
 
-                    }
+            RequestQueue requestQueue = Volley.newRequestQueue(getContext());
+            requestQueue.add(stringRequest);
 
-                });
-
-        RequestQueue requestQueue = Volley.newRequestQueue(getContext());
-        requestQueue.add(stringRequest);
+        }
 
     }
 
     private void performQueueAction( final String action ) {
 
-        String action_url = server + "api/queue/" + queue_id;
+        if ( rootView.getParent() != null ) {
 
-        StringRequest stringRequest = new StringRequest(Request.Method.POST , action_url ,
-                new Response.Listener<String>() {
+            String action_url = server + "api/queue/" + queue_id;
 
-                    @Override
-                    public void onResponse(String response) {
+            StringRequest stringRequest = new StringRequest(Request.Method.POST, action_url,
+                    new Response.Listener<String>() {
 
-                    }
-                },
-                new Response.ErrorListener() {
+                        @Override
+                        public void onResponse(String response) {
 
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
+                        }
+                    },
+                    new Response.ErrorListener() {
 
-                    }
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
 
-                }) {
-            @Override
-            protected Map<String, String> getParams() {
+                        }
 
-                Map<String, String> params = new HashMap<>();
-                params.put( KEY_ACTION , action );
+                    }) {
+                @Override
+                protected Map<String, String> getParams() {
 
-                return params;
+                    Map<String, String> params = new HashMap<>();
+                    params.put(KEY_ACTION, action);
 
-            }
-            @Override
-            public Map<String, String> getHeaders () {
+                    return params;
 
-                Map<String, String> headers = new HashMap<>();
+                }
 
-                String auth = "Bearer " + token;
-                headers.put("Authorization", auth);
+                @Override
+                public Map<String, String> getHeaders() {
 
-                return headers;
+                    Map<String, String> headers = new HashMap<>();
 
-            }
-        };
+                    String auth = "Bearer " + token;
+                    headers.put("Authorization", auth);
 
-        RequestQueue requestQueue = Volley.newRequestQueue(getContext());
-        requestQueue.add(stringRequest);
+                    return headers;
+
+                }
+            };
+
+            RequestQueue requestQueue = Volley.newRequestQueue(getContext());
+            requestQueue.add(stringRequest);
+
+        }
 
     }
 
     private void performAppointmentAction( final String action ) {
 
-        String action_url = server + "api/queue/" + queue_id + "/appointment";
+        if ( rootView.getParent() != null ) {
 
-        StringRequest stringRequest = new StringRequest(Request.Method.POST , action_url ,
-                new Response.Listener<String>() {
+            String action_url = server + "api/queue/" + queue_id + "/appointment";
 
-                    @Override
-                    public void onResponse(String response) {
+            StringRequest stringRequest = new StringRequest(Request.Method.POST, action_url,
+                    new Response.Listener<String>() {
 
-                    }
-                },
-                new Response.ErrorListener() {
+                        @Override
+                        public void onResponse(String response) {
 
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
+                        }
+                    },
+                    new Response.ErrorListener() {
 
-                    }
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
 
-                }) {
-            @Override
-            protected Map<String, String> getParams() {
+                        }
 
-                Map<String, String> params = new HashMap<>();
-                params.put( KEY_ACTION , action );
+                    }) {
+                @Override
+                protected Map<String, String> getParams() {
 
-                return params;
+                    Map<String, String> params = new HashMap<>();
+                    params.put(KEY_ACTION, action);
 
-            }
-            @Override
-            public Map<String, String> getHeaders () {
+                    return params;
 
-                Map<String, String> headers = new HashMap<>();
+                }
 
-                String auth = "Bearer " + token;
-                headers.put("Authorization", auth);
+                @Override
+                public Map<String, String> getHeaders() {
 
-                return headers;
+                    Map<String, String> headers = new HashMap<>();
 
-            }
-        };
+                    String auth = "Bearer " + token;
+                    headers.put("Authorization", auth);
 
-        RequestQueue requestQueue = Volley.newRequestQueue(getContext());
-        requestQueue.add(stringRequest);
+                    return headers;
+
+                }
+            };
+
+            RequestQueue requestQueue = Volley.newRequestQueue(getContext());
+            requestQueue.add(stringRequest);
+
+        }
 
     }
 
@@ -557,6 +581,8 @@ public class Queue_Status_Fragment extends Fragment {
         if ( snackbar != null )
 
             snackbar.dismiss();
+
+        snackbar = null;
 
     }
 

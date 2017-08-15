@@ -5,17 +5,15 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
-
-import static com.android.volley.VolleyLog.TAG;
 
 public class Root_Fragment_Vendor extends Fragment {
 
     private String user_email, user_password;
+
+    private View rootView = null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -23,7 +21,9 @@ public class Root_Fragment_Vendor extends Fragment {
 
 		super.onCreateView(inflater , container , savedInstanceState);
 
-        return inflater.inflate(R.layout.root_fragment_vendor, container, false);
+        rootView = inflater.inflate(R.layout.root_fragment_vendor, container, false);
+
+        return rootView;
 
     }
 
@@ -53,7 +53,7 @@ public class Root_Fragment_Vendor extends Fragment {
 
         String new_user_email, new_user_password;
 
-        if (isVisibleToUser) {
+        if ( isVisibleToUser && rootView != null ) {
 
             new_user_email = getContext().getSharedPreferences("MyPrefs" , Context.MODE_PRIVATE)
                     .getString( "email" , null );
