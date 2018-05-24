@@ -3,6 +3,7 @@ package com.easywait.weapon_x.easywait;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -10,15 +11,24 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.NumberPicker;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import static android.content.ContentValues.TAG;
 import static com.easywait.weapon_x.easywait.Globals.server;
 
 public class Queue_Status_Fragment extends Fragment {
@@ -44,20 +55,18 @@ public class Queue_Status_Fragment extends Fragment {
 
     private String queue_id;
 
-    private TextView position;
+    //private TextView position;
     private TextView q_id_name;
 
     private FloatingActionButton cancel_appointments;
-    private FloatingActionButton refresh;
 
     private ListView appointment_list;
 
     private Switch aSwitch;
 
-    private Button next;
-    private Button reset;
+    private ImageButton next, reset, done;
 
-    private FloatingActionButton set_preferences;
+    private NumberPicker numberPicker;
 
     private String token;
 
@@ -65,30 +74,93 @@ public class Queue_Status_Fragment extends Fragment {
 
     private View rootView = null;
 
+    private Toolbar toolbar;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+
+        super.onCreate(savedInstanceState);
+
+        setHasOptionsMenu(true);
+
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         rootView = inflater.inflate(R.layout.fragment_queue_status, container, false);
 
-        position = (TextView) rootView.findViewById( R.id.position );
+        //position = (TextView) rootView.findViewById( R.id.position );
         q_id_name = (TextView) rootView.findViewById( R.id.q_id );
 
-        next = (Button) rootView.findViewById( R.id.move_next );
-        reset = (Button) rootView.findViewById( R.id.reset );
+        next = (ImageButton) rootView.findViewById( R.id.move_next );
+        reset = (ImageButton) rootView.findViewById( R.id.reset );
+        done = (ImageButton) rootView.findViewById( R.id.done );
+        done.setVisibility( View.INVISIBLE );
 
         cancel_appointments = (FloatingActionButton) rootView.findViewById( R.id.cancel_all_appointments );
         cancel_appointments.setVisibility( View.INVISIBLE );
 
         appointment_list = (ListView) rootView.findViewById( R.id.appointment_list );
 
-        set_preferences = (FloatingActionButton) rootView.findViewById( R.id.preferences );
-
         aSwitch = (Switch) rootView.findViewById( R.id.Switch );
 
-        refresh = (FloatingActionButton) rootView.findViewById( R.id.refresh );
+        numberPicker = (NumberPicker) rootView.findViewById( R.id.numberPicker );
+        numberPicker.setMinValue( 0 );
+        numberPicker.setMaxValue( 500 );
+        numberPicker.setWrapSelectorWheel( false );
+
+        toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
+
+        toolbar.setTitle( "Queue Preferences" );
+        toolbar.setVisibility( View.VISIBLE );
 
         return rootView;
+
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+
+        getActivity().getMenuInflater().inflate(R.menu.menu_vendor_change_position, menu);
+
+        super.onCreateOptionsMenu(menu, inflater);
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if ( item.getItemId() == R.id.q_preferences ) {
+
+            if ( snackbar != null )
+
+                snackbar.dismiss();
+
+            snackbar = null;
+
+            Bundle bundle = new Bundle();
+
+            bundle.putString("queue_id", queue_id);
+
+            Queue_Preferences_Fragment queue_preferences_fragment = new Queue_Preferences_Fragment();
+
+            queue_preferences_fragment.setArguments(bundle);
+
+            FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+            transaction.addToBackStack(null);
+
+            transaction.replace(R.id.root_frame_vendor, queue_preferences_fragment);
+
+            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+
+            transaction.commit();
+
+        }
+
+        return super.onOptionsItemSelected(item);
 
     }
 
@@ -175,9 +247,10 @@ public class Queue_Status_Fragment extends Fragment {
                 @Override
                 public void onClick(View v) {
 
-                    position.setText(Integer.toString((Integer.parseInt(position.getText().toString())) + 1));
+                    next.setAlpha( 0.5f );
+                    next.setEnabled( false );
 
-                    performQueueAction("movenext");
+                    performQueueAction( "movenext" , false );
 
                 }
 
@@ -188,9 +261,9 @@ public class Queue_Status_Fragment extends Fragment {
                 @Override
                 public void onClick(View v) {
 
-                    position.setText("0");
+                    numberPicker.setValue( 0 );
 
-                    performQueueAction("reset");
+                    performQueueAction( "reset" , false );
 
                 }
 
@@ -269,53 +342,39 @@ public class Queue_Status_Fragment extends Fragment {
 
             });
 
-            set_preferences.setOnClickListener(new View.OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-
-                    if ( snackbar != null )
-
-                        snackbar.dismiss();
-
-                    snackbar = null;
-
-                    Bundle bundle = new Bundle();
-
-                    bundle.putString("queue_id", queue_id);
-
-                    Queue_Preferences_Fragment queue_preferences_fragment = new Queue_Preferences_Fragment();
-
-                    queue_preferences_fragment.setArguments(bundle);
-
-                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
-
-                    transaction.addToBackStack(null);
-
-                    transaction.replace(R.id.root_frame_vendor, queue_preferences_fragment);
-
-                    transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-
-                    transaction.commit();
-
-                }
-
-            });
-
-            refresh.setOnClickListener(new View.OnClickListener() {
-
-                @Override
-                public void onClick(View view) {
-
-                    fetchAppointments();
-
-                    Toast.makeText(getContext(), "Appointments Refreshed!", Toast.LENGTH_SHORT).show();
-
-                }
-
-            });
-
         }
+
+        numberPicker.setOnScrollListener(new NumberPicker.OnScrollListener() {
+
+            @Override
+            public void onScrollStateChange(NumberPicker numberPicker, int i) {
+
+                if ( i == SCROLL_STATE_TOUCH_SCROLL )
+
+                    done.setVisibility(View.INVISIBLE);
+
+                if ( i == SCROLL_STATE_IDLE ) {
+
+                    done.setVisibility( View.VISIBLE );
+
+                    done.setOnClickListener(new View.OnClickListener() {
+
+                        @Override
+                        public void onClick(View view) {
+
+                            done.setVisibility( View.INVISIBLE );
+
+                            performQueueAction( "movenext" , true );
+
+                        }
+
+                    });
+
+                }
+
+            }
+
+        });
 
     }
 
@@ -430,7 +489,8 @@ public class Queue_Status_Fragment extends Fragment {
 
                                 JSONObject object = new JSONObject(response);
 
-                                position.setText(object.getString("position"));
+                                numberPicker.setValue( Integer.parseInt( object.getString( "position" ) ) );
+                                //position.setText(object.getString("position"));
 
                                 if (object.getString("accepting_appointments").equals("1")) {
 
@@ -469,7 +529,7 @@ public class Queue_Status_Fragment extends Fragment {
 
     }
 
-    private void performQueueAction( final String action ) {
+    private void performQueueAction(final String action , final boolean called_on_scroll ) {
 
         if ( rootView.getParent() != null ) {
 
@@ -481,7 +541,18 @@ public class Queue_Status_Fragment extends Fragment {
                         @Override
                         public void onResponse(String response) {
 
+                            if ( action.equals( "movenext" ) && !called_on_scroll ) {
+
+                                next.setAlpha( 1.0f );
+                                next.setEnabled( true );
+
+                                numberPicker.setValue( numberPicker.getValue() + 1 );
+                                //position.setText(Integer.toString((Integer.parseInt(position.getText().toString())) + 1));
+
+                            }
+
                         }
+
                     },
                     new Response.ErrorListener() {
 

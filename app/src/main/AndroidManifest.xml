@@ -3,6 +3,7 @@
     package="com.easywait.weapon_x.easywait">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -10,12 +11,6 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity
-            android:name=".Cust_Vend_Controller"
-            android:label="@string/app_name"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustPan" />
         <activity
             android:name=".SignIn_Activity"
             android:label="@string/signin"
@@ -30,7 +25,7 @@
             android:windowSoftInputMode="stateAlwaysVisible" />
         <activity
             android:name=".SliderScreen_Activity"
-            android:theme="@style/AppTheme_2"></activity>
+            android:theme="@style/AppTheme_2" />
         <activity
             android:name=".Splash_Activity"
             android:theme="@style/AppTheme_2">
@@ -40,6 +35,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver android:name=".CheckInternetBroadcast" />
+
+        <activity
+            android:name=".Cust_Vend_Controller"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustPan" />
     </application>
 
 </manifest>

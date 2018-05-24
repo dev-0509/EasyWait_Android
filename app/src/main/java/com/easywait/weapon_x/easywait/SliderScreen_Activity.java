@@ -377,7 +377,7 @@ public class SliderScreen_Activity extends AppCompatActivity {
 //
 //        super.onActivityResult(requestCode, resultCode, data);
 //
-//        Intent intent = new Intent( SliderScreen_Activity.this , Cust_Vend_Controller.class );
+//        Intent intent = new Intent( SliderScreen_Activity.this , Test.class );
 //
 //        startActivity( intent );
 //

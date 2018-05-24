@@ -70,5 +70,14 @@
     <string name="app_icon">App Icon</string>
     <string name="easy">Easy</string>
     <string name="wait">Wait</string>
+    <string name="title_activity_controller">Controller</string>
+    <string name="search">Search a queue</string>
+    <string name="tri">triangle</string>
+    <string name="currently_serving">Currently Serving</string>
+    <string name="desc_text_1">Too Busy? Search your Vendor\'s Queue and Book an Appointment!</string>
+    <string name="desc_text_2">Booked a position? Stop waiting! Sit back and track your Vendor\'s Queue!</string>
+    <string name="desc_text_3">Too many people waiting?\nStart a Queue and manage online appointments!\nReduce long waiting queues!</string>
+    <string name="queue_preferences">Queue Preferences</string>
+    <string name="done">done</string>
 
 </resources>

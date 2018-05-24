@@ -8,42 +8,13 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin">
 
-    <EditText
-        android:id="@+id/name"
-        android:layout_width="220dp"
-        android:layout_height="wrap_content"
-        android:inputType="textPersonName"
-        android:textAlignment="center"
-        android:hint="@string/name_your_queue"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
-
-    <Button
-        android:id="@+id/add_q_button"
-        android:background="@drawable/roundedbutton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/add"
-        android:layout_marginBottom="11dp"
-        android:layout_below="@+id/name"
-        android:layout_centerHorizontal="true" />
-
-    <ImageView
-        android:contentDescription="@string/add_q_image"
-        android:id="@+id/vendor"
-        android:layout_width="100dp"
-        android:layout_height="70dp"
-        app:srcCompat="@mipmap/add_q_image"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
-
     <ListView
         android:layout_width="match_parent"
-        android:layout_height="150dp"
+        android:layout_height="210dp"
         android:transcriptMode="alwaysScroll"
         android:id="@+id/q_list"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_alignParentStart="true" />
 
     <ImageView
         android:id="@+id/queue"
@@ -51,9 +22,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:srcCompat="@mipmap/queue2"
-        android:layout_alignParentBottom="true"
-        android:layout_alignStart="@+id/vendor"
-        android:layout_marginBottom="147dp" />
+        android:layout_below="@+id/active_queues"
+        android:layout_centerHorizontal="true" />
 
     <TextView
         android:id="@+id/active_queues"
@@ -63,7 +33,41 @@
         android:textAlignment="center"
         android:textSize="18sp"
         android:text="@string/active_queues"
-        android:layout_above="@+id/queue"
-        android:layout_centerHorizontal="true" />
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="37dp" />
+
+    <RelativeLayout
+        android:id="@+id/description_3"
+        android:layout_width="match_parent"
+        android:layout_height="510dp"
+        android:layout_below="@+id/active_queues"
+        android:layout_alignParentStart="true">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:background="@drawable/borders"
+            android:fontFamily="sans-serif-condensed"
+            android:textSize="18sp"
+            android:textColor="@color/black"
+            android:lineSpacingExtra="10dp"
+            android:textAlignment="center"
+            android:gravity="center_vertical"
+            android:text="@string/desc_text_3"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginBottom="20dp" />
+
+        <ImageView
+            android:contentDescription="@string/add_q_image"
+            android:id="@+id/vendor_image"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            app:srcCompat="@mipmap/add_q_image"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true" />
+
+    </RelativeLayout>
 
 </RelativeLayout>

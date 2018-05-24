@@ -3,7 +3,10 @@ package com.easywait.weapon_x.easywait;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +17,8 @@ import static com.easywait.weapon_x.easywait.R.layout.activity_profile;
 
 public class Profile extends Fragment{
 
+    Toolbar toolbar;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -21,6 +26,7 @@ public class Profile extends Fragment{
         final View rootView = inflater.inflate(activity_profile, container, false);
 
         rootView.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v) {
 
@@ -60,7 +66,43 @@ public class Profile extends Fragment{
 
         });
 
+        toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
+
+        toolbar.setVisibility( View.GONE );
+
         return rootView;
+
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+
+        super.onViewCreated(view, savedInstanceState);
+
+        TabLayout tabLayout = (TabLayout) getActivity().findViewById(R.id.tabs);
+
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+
+                if (tab.getPosition() == 2)
+
+                    toolbar.setVisibility( View.GONE );
+
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+
+        });
 
     }
 

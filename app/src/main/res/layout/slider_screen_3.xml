@@ -54,24 +54,24 @@
         <Button
             android:id="@+id/vendor_button"
             android:clickable="true"
-            android:layout_width="100dp"
+            android:layout_width="130dp"
             android:layout_height="wrap_content"
             android:background="@drawable/borders"
             android:text="@string/vendor"
             android:layout_alignBaseline="@+id/customer_button"
             android:layout_alignBottom="@+id/customer_button"
-            android:layout_toStartOf="@+id/textView" />
+            android:layout_alignParentStart="true" />
 
         <Button
-            android:layout_width="100dp"
+            android:layout_width="130dp"
             android:layout_height="wrap_content"
             android:clickable="true"
             android:text="@string/customer"
             android:background="@drawable/borders"
             android:id="@+id/customer_button"
-            android:layout_marginBottom="77dp"
+            android:layout_marginBottom="78dp"
             android:layout_alignParentBottom="true"
-            android:layout_toEndOf="@+id/textView" />
+            android:layout_alignParentEnd="true" />
 
     <ImageView
         android:contentDescription="@string/vendor"
@@ -79,10 +79,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:srcCompat="@mipmap/vend"
-        android:layout_marginStart="21dp"
         android:layout_above="@+id/vendor_button"
         android:layout_alignStart="@+id/vendor_button"
-        android:layout_marginBottom="11dp" />
+        android:layout_marginStart="34dp" />
 
     <ImageView
         android:contentDescription="@string/customer"
@@ -90,8 +89,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:srcCompat="@mipmap/cust"
-        android:layout_alignTop="@+id/imageView6"
+        android:layout_above="@+id/customer_button"
         android:layout_alignEnd="@+id/customer_button"
-        android:layout_marginEnd="23dp" />
+        android:layout_marginEnd="32dp" />
 
 </RelativeLayout>

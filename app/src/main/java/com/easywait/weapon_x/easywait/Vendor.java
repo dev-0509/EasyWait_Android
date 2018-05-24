@@ -11,11 +11,18 @@ import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -23,6 +30,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.android.volley.Request;
@@ -46,14 +54,11 @@ public class Vendor extends Fragment {
 
     private static final String KEY_QUEUE_NAME = "name";
 
-    EditText q_name;
+    String q_name;
 
     TextView active_queues;
 
     ImageView queue_image;
-    ImageView vendor_image;
-
-    Button add_q_button;
 
     ListView q_list;
 
@@ -67,7 +72,22 @@ public class Vendor extends Fragment {
 
     View rootView = null;
 
-    String q_id_array[] = new String[ 50 ], q_name_array[] = new String[ 50 ];
+    List<String> q_id_array = new ArrayList<>(), q_name_array = new ArrayList<>();
+
+    Toolbar toolbar;
+
+    RelativeLayout relativeLayout;
+
+    private boolean is_vendor_fragment = false;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+
+        super.onCreate(savedInstanceState);
+
+        setHasOptionsMenu(true);
+
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -101,21 +121,76 @@ public class Vendor extends Fragment {
 
         });
 
-        q_name = (EditText) rootView.findViewById(R.id.name);
-
         active_queues = (TextView) rootView.findViewById(R.id.active_queues);
         active_queues.setVisibility(View.INVISIBLE);
 
         queue_image = (ImageView) rootView.findViewById(R.id.queue);
-        vendor_image = (ImageView) rootView.findViewById(R.id.vendor);
         queue_image.setVisibility(View.INVISIBLE);
-
-        add_q_button = (Button) rootView.findViewById(R.id.add_q_button);
 
         q_list = (ListView) rootView.findViewById(R.id.q_list);
         q_list.setVisibility(View.INVISIBLE);
 
+        relativeLayout = (RelativeLayout) rootView.findViewById( R.id.description_3 );
+        relativeLayout.setVisibility( View.INVISIBLE );
+
+        toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
+
+        toolbar.setTitle( "Add a Queue..." );
+        toolbar.setVisibility( View.VISIBLE );
+
+        is_vendor_fragment = true;
+
         return rootView;
+
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+
+        getActivity().getMenuInflater().inflate(R.menu.menu_vendor_add_queue, menu);
+
+        MenuItem item = menu.findItem( R.id.add_queue );
+        final SearchView searchView = (SearchView) item.getActionView();
+
+        searchView.setQueryHint( "Add a Queue..." );
+
+        searchView.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+
+                searchView.setQueryHint( "Name your Queue   ..." );
+
+            }
+
+        });
+
+        searchView.setIconifiedByDefault( false );
+        searchView.setImeOptions( EditorInfo.IME_ACTION_DONE );
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+
+                q_name = query;
+
+                publishNewQueue();
+
+                return false;
+
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+
+                return false;
+
+            }
+
+        });
+
+        super.onCreateOptionsMenu(menu, inflater);
 
     }
 
@@ -124,9 +199,9 @@ public class Vendor extends Fragment {
 
         super.onViewCreated(view, savedInstanceState);
 
-        active_queues.setVisibility( View.INVISIBLE );
-        queue_image.setVisibility( View.INVISIBLE );
-        q_list.setVisibility( View.INVISIBLE );
+        active_queues.setVisibility(View.INVISIBLE);
+        queue_image.setVisibility(View.INVISIBLE);
+        q_list.setVisibility(View.INVISIBLE);
 
         TabLayout tabLayout = (TabLayout) getActivity().findViewById(R.id.tabs);
 
@@ -135,15 +210,19 @@ public class Vendor extends Fragment {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
 
-                if ( tab.getPosition() == 1 ) {
+                if (tab.getPosition() == 1) {
+
+                    if ( is_vendor_fragment )
+
+                        toolbar.setVisibility( View.VISIBLE );
 
                     if (snackbar != null)
 
-                        if ( isSignedIn )
+                        if (isSignedIn)
 
                             snackbar = null;
 
-                        else if ( token == null )
+                        else if (token == null)
 
                             snackbar.show();
 
@@ -171,49 +250,55 @@ public class Vendor extends Fragment {
 
         if (token == null) {
 
-            snackbar = Snackbar.make( rootView , "New Vendor?", Snackbar.LENGTH_INDEFINITE)
-                    .setAction("SIGN UP!", new View.OnClickListener() {
+            FragmentTransaction trans = getFragmentManager().beginTransaction();
 
-                        @Override
-                        public void onClick(View v) {
+            trans.replace( R.id.root_frame_vendor, new Vendor_Intro_Screen() , "Vendor_Intro_Screen" ); //.replace(R.id.root_frame_vendor, new Vendor_Intro_Screen());
 
-                            snackbar.dismiss();
+            trans.commit();
 
-                            snackbar = null;
-
-                            Intent intent = new Intent(getActivity(), SignUp_Activity.class);
-
-                            startActivity(intent);
-
-                        }
-
-                    });
-
-            snackbar.setActionTextColor(getResources().getColor(R.color.snackbar));
+//            snackbar = Snackbar.make(rootView, "New Vendor?", Snackbar.LENGTH_INDEFINITE)
+//                    .setAction("SIGN UP!", new View.OnClickListener() {
+//
+//                        @Override
+//                        public void onClick(View v) {
+//
+//                            snackbar.dismiss();
+//
+//                            snackbar = null;
+//
+//                            Intent intent = new Intent(getActivity(), SignUp_Activity.class);
+//
+//                            startActivity(intent);
+//
+//                        }
+//
+//                    });
+//
+//            snackbar.setActionTextColor(getResources().getColor(R.color.snackbar));
 
         } else {
 
             fetchAllQueues();
-
-            add_q_button.setOnClickListener(new View.OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-
-                    InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow( rootView.getWindowToken(), 0);
-
-                    if (TextUtils.isEmpty(q_name.getText().toString().trim()))
-
-                        Toast.makeText(getContext(), "Please reference your Queue!", Toast.LENGTH_SHORT).show();
-
-                    else
-
-                        publishNewQueue();
-
-                }
-
-            });
+//
+//            add_q_button.setOnClickListener(new View.OnClickListener() {
+//
+//                @Override
+//                public void onClick(View v) {
+//
+//                    InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+//                    imm.hideSoftInputFromWindow(rootView.getWindowToken(), 0);
+//
+//                    if (TextUtils.isEmpty(q_name.getText().toString().trim()))
+//
+//                        Toast.makeText(getContext(), "Please reference your Queue!", Toast.LENGTH_SHORT).show();
+//
+//                    else
+//
+//                        publishNewQueue();
+//
+//                }
+//
+//            });
 
         }
 
@@ -224,8 +309,8 @@ public class Vendor extends Fragment {
 
                 Bundle bundle = new Bundle();
 
-                bundle.putString( "queue_id" , q_id_array[ position ] );
-                bundle.putString( "queue_name" , q_name_array[ position ] );
+                bundle.putString("queue_id", q_id_array.get( position ));
+                bundle.putString("queue_name", q_name_array.get(position));
 
                 Queue_Status_Fragment queue_status_fragment = new Queue_Status_Fragment();
 
@@ -237,7 +322,7 @@ public class Vendor extends Fragment {
 
                 trans.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
 
-                trans.addToBackStack( null );
+                trans.addToBackStack(null);
 
                 trans.commit();
 
@@ -279,8 +364,6 @@ public class Vendor extends Fragment {
 
                             new JSONObject(response);
 
-                            vendor_image.setVisibility(View.INVISIBLE);
-
                             if (q_list.getVisibility() == View.VISIBLE) {
 
                                 JSONObject object = new JSONObject(response);
@@ -295,8 +378,8 @@ public class Vendor extends Fragment {
 
                                     list.add(object1.getString("id") + " : " + object1.getString("name"));
 
-                                    q_id_array[ i ] = object1.getString( "id" );
-                                    q_name_array[ i ] = object1.getString( "name" );
+                                    q_id_array.add( object1.getString( "id" ) );
+                                    q_name_array.add( object1.getString( "name" ) );
 
                                 }
 
@@ -311,24 +394,24 @@ public class Vendor extends Fragment {
                             }
 
                             else {
-
-                                ObjectAnimator.ofFloat(q_name, "translationY", 0.0f, -350.0f)
-                                        .setDuration(1200).start();
-
-                                final ObjectAnimator object = ObjectAnimator.ofFloat(add_q_button, "translationY", 0.0f, -350.0f)
-                                        .setDuration(1200);
-
-                                object.start();
-
-                                object.addListener(new Animator.AnimatorListener() {
-
-                                    @Override
-                                    public void onAnimationStart(Animator animation) {
-
-                                    }
-
-                                    @Override
-                                    public void onAnimationEnd(Animator animation) {
+//
+//                                ObjectAnimator.ofFloat(q_name, "translationY", 0.0f, -350.0f)
+//                                        .setDuration(1200).start();
+//
+//                                final ObjectAnimator object = ObjectAnimator.ofFloat(add_q_button, "translationY", 0.0f, -350.0f)
+//                                        .setDuration(1200);
+//
+//                                object.start();
+//
+//                                object.addListener(new Animator.AnimatorListener() {
+//
+//                                    @Override
+//                                    public void onAnimationStart(Animator animation) {
+//
+//                                    }
+//
+//                                    @Override
+//                                    public void onAnimationEnd(Animator animation) {
 
                                         try {
 
@@ -344,8 +427,8 @@ public class Vendor extends Fragment {
 
                                                 list.add(object1.getString("id") + " : " + object1.getString("name"));
 
-                                                q_id_array[ i ] = object1.getString( "id" );
-                                                q_name_array[ i ] = object1.getString( "name" );
+                                                q_id_array.add( object1.getString( "id" ) );
+                                                q_name_array.add( object1.getString( "name" ) );
 
                                             }
 
@@ -359,6 +442,8 @@ public class Vendor extends Fragment {
 
                                         } catch (Exception e) {
 
+                                            relativeLayout.setVisibility( View.VISIBLE );
+
                                             Snackbar.make(rootView, "No Active Queues", Snackbar.LENGTH_LONG)
                                                     .setAction("Action", null).show();
 
@@ -366,21 +451,21 @@ public class Vendor extends Fragment {
 
                                     }
 
-                                    @Override
-                                    public void onAnimationCancel(Animator animation) {
-
-                                    }
-
-                                    @Override
-                                    public void onAnimationRepeat(Animator animation) {
-
-                                    }
-
-                                });
-
-                            }
+//                                    @Override
+//                                    public void onAnimationCancel(Animator animation) {
+//
+//                                    }
+//
+//                                    @Override
+//                                    public void onAnimationRepeat(Animator animation) {
+//
+//                                    }
+//
+//                                });
 
                         } catch ( Exception e ) {
+
+                            relativeLayout.setVisibility( View.VISIBLE );
 
                             Snackbar.make( rootView , "No Active Queues" , Snackbar.LENGTH_LONG )
                                     .setAction("Action", null).show();
@@ -446,8 +531,8 @@ public class Vendor extends Fragment {
 
                                 list.add( object1.getString( "id" ) + " : " + object1.getString( "name" ) );
 
-                                q_id_array[ q_id_array.length + 1 ] = object1.getString( "id" );
-                                q_name_array[ q_name_array.length + 1 ] = object1.getString( "name" );
+                                q_id_array.add( object1.getString( "id" ) );
+                                q_name_array.add( object1.getString( "name" ) );
 
                                 q_list.setSelection( queue.length() - 1 );
 
@@ -455,25 +540,23 @@ public class Vendor extends Fragment {
 
                             } else {
 
-                                vendor_image.setVisibility(View.INVISIBLE);
-
-                                ObjectAnimator.ofFloat(q_name, "translationY", 0.0f, -350.0f)
-                                        .setDuration(1200).start();
-
-                                final ObjectAnimator object = ObjectAnimator.ofFloat(add_q_button, "translationY", 0.0f, -350.0f)
-                                        .setDuration(1200);
-
-                                object.start();
-
-                                object.addListener(new Animator.AnimatorListener() {
-
-                                    @Override
-                                    public void onAnimationStart(Animator animation) {
-
-                                    }
-
-                                    @Override
-                                    public void onAnimationEnd(Animator animation) {
+//                                ObjectAnimator.ofFloat(q_name, "translationY", 0.0f, -350.0f)
+//                                        .setDuration(1200).start();
+//
+//                                final ObjectAnimator object = ObjectAnimator.ofFloat(add_q_button, "translationY", 0.0f, -350.0f)
+//                                        .setDuration(1200);
+//
+//                                object.start();
+//
+//                                object.addListener(new Animator.AnimatorListener() {
+//
+//                                    @Override
+//                                    public void onAnimationStart(Animator animation) {
+//
+//                                    }
+//
+//                                    @Override
+//                                    public void onAnimationEnd(Animator animation) {
 
                                         try {
 
@@ -489,8 +572,8 @@ public class Vendor extends Fragment {
 
                                                 list.add(object1.getString("id") + " : " + object1.getString("name"));
 
-                                                q_id_array[ i ] = object1.getString( "id" );
-                                                q_name_array[ i ] = object1.getString( "name" );
+                                                q_id_array.add( object1.getString( "id" ) );
+                                                q_name_array.add( object1.getString( "name" ) );
 
                                             }
 
@@ -502,6 +585,8 @@ public class Vendor extends Fragment {
                                             active_queues.setVisibility(View.VISIBLE);
                                             queue_image.setVisibility(View.VISIBLE);
 
+                                            relativeLayout.setVisibility( View.INVISIBLE );
+
                                         } catch (Exception e) {
 
                                             snackbar = Snackbar.make( rootView , "No Active Queues", Snackbar.LENGTH_LONG)
@@ -510,23 +595,24 @@ public class Vendor extends Fragment {
                                         }
 
                                     }
+//
+//                                    @Override
+//                                    public void onAnimationCancel(Animator animation) {
+//
+//                                    }
+//
+//                                    @Override
+//                                    public void onAnimationRepeat(Animator animation) {
+//
+//                                    }
+//
+//                                });
 
-                                    @Override
-                                    public void onAnimationCancel(Animator animation) {
-
-                                    }
-
-                                    @Override
-                                    public void onAnimationRepeat(Animator animation) {
-
-                                    }
-
-                                });
-
-                            }
+//                            }
 
                         } catch (Exception e) {
 
+                            Toast.makeText(getContext(), e.toString(), Toast.LENGTH_SHORT).show();
                             e.printStackTrace();
 
                         }
@@ -548,7 +634,7 @@ public class Vendor extends Fragment {
             protected Map<String, String> getParams() {
 
                 Map<String, String> params = new HashMap<>();
-                params.put(KEY_QUEUE_NAME, q_name.getText().toString().trim());
+                params.put(KEY_QUEUE_NAME, q_name);// q_name.getText().toString().trim());
 
                 return params;
 
@@ -569,6 +655,15 @@ public class Vendor extends Fragment {
 
         RequestQueue requestQueue = Volley.newRequestQueue( this.getContext() );
         requestQueue.add( stringRequest );
+
+    }
+
+    @Override
+    public void onDestroy() {
+
+        super.onDestroy();
+
+        is_vendor_fragment = false;
 
     }
 
